@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>.</h1>
+    <script>
+        import firebaseConfig from './firebaseConfig.js';
+
+// Import Firebase SDK modules
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword,
+    onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { 
+    getDatabase, 
+    ref, 
+    set, 
+    get 
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
+
+        // Inside loadUserProfile(uid, userEmail)
+
+// Get user data from Firebase
+const userRef = ref(database, `users/${uid}`);
+onValue(userRef, (snapshot) => {
+    const userData = snapshot.val();
+    if (!userData) {
+        showAlert('No user data found');
+        return;
+    }
+
+    const profile = userData.profile || {};
+    
+    // 👇 This logic decides what name to display
+    const displayName = profile.firstName 
+        ? `${profile.firstName} ${profile.lastName || ''}`.trim()
+        : profile.username || userEmail?.split('@')[0] || 'User';
+    
+    // 👇 This line actually updates the page
+  console.log(displayName)
+});
+
+
+    </script>
+</body>
+</html>
