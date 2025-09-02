@@ -373,18 +373,31 @@
         // Check admin authentication
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Check if user is admin (implement your admin check logic)
-                const adminRef = ref(database, `admins/${user.uid}`);
-                const adminSnapshot = await new Promise(resolve => {
-                    onValue(adminRef, resolve, { onlyOnce: true });
-                });
-                
-                if (adminSnapshot.exists()) {
-                    currentAdmin = user;
-                    showAdminPanel();
-                    setupTransactionListener();
-                } else {
-                    alert('Access denied. Admin privileges required.');
+                try {
+                    const userRef = ref(database, `users/${user.uid}`);
+                    const userSnapshot = await new Promise(resolve => {
+                        onValue(userRef, resolve, { onlyOnce: true });
+                    });
+                    
+                    if (userSnapshot.exists()) {
+                        const userData = userSnapshot.val();
+                        
+                        // Check if user has admin role
+                        if (userData.role === 'admin') {
+                            currentAdmin = user;
+                            showAdminPanel();
+                            setupTransactionListener();
+                        } else {
+                            alert('Access denied. Admin privileges required.');
+                            window.location.href = '/login.html';
+                        }
+                    } else {
+                        alert('User data not found.');
+                        window.location.href = '/login.html';
+                    }
+                } catch (error) {
+                    console.error('Error checking admin access:', error);
+                    alert('Error verifying admin access.');
                     window.location.href = '/login.html';
                 }
             } else {
