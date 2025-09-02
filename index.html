@@ -3,932 +3,579 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MVC mining - Login</title>
+    <title>Crypto Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --geist-background: #ffffff;
-            --geist-foreground: #000000;
-            --geist-gray: #666666;
-            --geist-light-gray: #999999;
-            --geist-border: #e5e5e5;
-            --geist-hover: #f5f5f5;
-            --orange-primary: #ff6b35;
-            --orange-secondary: #e55a2b;
-            --orange-light: #ff8c5a;
-            --error-color: #ef4444;
-            --success-color: #22c55e;
+            --bg: #ffffff;
+            --fg: #000000;
+            --gray: #666666;
+            --border: #e5e5e5;
+            --hover: #f5f5f5;
+            --primary: #ff6b35;
+            --danger: #ef4444;
+            --warning: #f59e0b;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--orange-primary) 0%, var(--orange-secondary) 100%);
-            color: var(--geist-foreground);
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
             min-height: 100vh;
+            font-size: 14px;
+        }
+
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            z-index: 9999;
         }
 
-        .login-container {
-            background: var(--geist-background);
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--orange-primary), var(--orange-light));
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .logo h1 {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--orange-primary);
-            margin-bottom: 8px;
-        }
-
-        .logo p {
-            font-size: 14px;
-            color: var(--geist-gray);
-        }
-
-        .auth-tabs {
-            display: flex;
-            background: var(--geist-hover);
-            border-radius: 8px;
-            padding: 4px;
-            margin-bottom: 32px;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 8px 16px;
-            background: none;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--geist-gray);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .auth-tab.active {
-            background: var(--geist-background);
-            color: var(--orange-primary);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--geist-foreground);
-            margin-bottom: 6px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--geist-border);
-            border-radius: 8px;
-            font-size: 14px;
-            background: var(--geist-background);
-            transition: all 0.2s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--orange-primary);
-            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-        }
-
-        .form-input.error {
-            border-color: var(--error-color);
-        }
-
-        .error-message {
-            color: var(--error-color);
-            font-size: 12px;
-            margin-top: 4px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .auth-button {
-            width: 100%;
-            padding: 12px;
-            background: var(--orange-primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
             margin-bottom: 16px;
         }
 
-        .auth-button:hover {
-            background: var(--orange-secondary);
-            transform: translateY(-1px);
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .account-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
         }
 
-        .auth-button:disabled {
-            background: var(--geist-light-gray);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .loading-spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .divider {
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 400px;
+            width: 100%;
             text-align: center;
-            margin: 20px 0;
-            position: relative;
-            color: var(--geist-gray);
-            font-size: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .modal-icon.banned { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .modal-icon.suspended { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .modal-message {
+            color: var(--gray);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .modal-reason {
+            background: var(--hover);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
+        .modal-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .modal-btn:hover { background: #e55a2b; }
+
+        .header {
+            position: fixed;
+            top: 0;
             left: 0;
             right: 0;
-            height: 1px;
-            background: var(--geist-border);
+            height: 60px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
         }
 
-        .divider span {
-            background: var(--geist-background);
-            padding: 0 16px;
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
-        .guest-button {
-            width: 100%;
-            padding: 12px;
-            background: var(--geist-hover);
-            color: var(--geist-foreground);
-            border: 1px solid var(--geist-border);
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
+        .slide-button, .notification-btn {
+            background: none;
+            border: none;
+            color: var(--fg);
             cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
         }
 
-        .guest-button:hover {
-            background: var(--geist-border);
+        .slide-button:hover, .notification-btn:hover {
+            background: var(--hover);
         }
 
-        .success-message {
-            background: rgba(34, 197, 94, 0.1);
-            color: var(--success-color);
-            padding: 12px 16px;
-            border-radius: 8px;
+        .logo {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .notification-btn {
+            position: relative;
+            color: var(--gray);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+        }
+
+        .profile-btn {
+            background: var(--border);
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
             font-size: 14px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .profile-btn:hover { background: var(--hover); }
+
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: -50vw;
+            width: 50vw;
+            height: calc(100vh - 60px);
+            background: var(--bg);
+            border-right: 1px solid var(--border);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: left 0.3s ease;
+            z-index: 999;
+            padding: 24px 0;
+        }
+
+        .sidebar.open { left: 0; }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            padding: 0 24px;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 12px 0;
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            border-bottom: 1px solid transparent;
+        }
+
+        .sidebar-nav a:hover { color: var(--fg); }
+        .sidebar-nav a.active { color: var(--fg); border-bottom-color: var(--primary); }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 1000;
+            padding: 8px 16px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: var(--gray);
+            min-width: 60px;
+        }
+
+        .nav-item:hover {
+            background: var(--hover);
+            color: var(--fg);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 140, 90, 0.1));
+            color: var(--primary);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+        }
+
+        .nav-item span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .main-content {
+            margin-top: 60px;
+            margin-bottom: 70px;
+            transition: margin-left 0.3s ease;
+            min-height: calc(100vh - 130px);
+        }
+
+        .main-content.sidebar-open { margin-left: 50vw; }
+
+        .content-frame {
+            width: 100%;
+            height: calc(100vh - 130px);
+            border: none;
             display: none;
         }
 
-        .success-message.show {
-            display: block;
+        .content-frame.active { display: block; }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
 
-        .form-footer {
-            text-align: center;
-            margin-top: 24px;
-            font-size: 12px;
-            color: var(--geist-gray);
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
 
-        /* Responsive */
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 32px 24px;
-                margin: 10px;
-            }
+        @media (max-width: 768px) {
+            .main-content.sidebar-open { margin-left: 0; }
+            .sidebar { width: 100%; left: -100%; }
+            .sidebar.open { left: 0; }
         }
 
-        /* Form switching */
-        .login-form {
-            display: block;
-        }
-        
-        .signup-form {
-            display: block;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo">
-            <h1>MVC mining</h1>
-            <p>Your crypto trading dashboard</p>
-        </div>
-
-        <!-- Auth Tabs -->
-        <div class="auth-tabs">
-            <button class="auth-tab active" id="loginTab">Login</button>
-            <button class="auth-tab" id="signupTab">Sign Up</button>
-        </div>
-
-        <!-- Success Message -->
-        <div class="success-message" id="successMessage">
-            Account created successfully! You can now log in.
-        </div>
-
-        <!-- Login Form -->
-        <div class="login-form" id="loginForm">
-            <form id="loginFormElement">
-                <div class="form-group">
-                    <label class="form-label" for="loginEmail">Email</label>
-                    <input 
-                        type="email" 
-                        class="form-input" 
-                        id="loginEmail" 
-                        placeholder="Enter your email"
-                        required
-                    >
-                    <div class="error-message" id="loginEmailError">Please enter a valid email</div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="loginPassword">Password</label>
-                    <input 
-                        type="password" 
-                        class="form-input" 
-                        id="loginPassword" 
-                        placeholder="Enter your password"
-                        required
-                    >
-                    <div class="error-message" id="loginPasswordError">Password is required</div>
-                </div>
-
-                <button type="submit" class="auth-button" id="loginButton">
-                    <span class="button-text">Sign In</span>
-                </button>
-            </form>
-        </div>
-
-        <!-- Signup Form -->
-        <div class="signup-form hidden" id="signupForm">
-            <form id="signupFormElement">
-                <div class="form-group">
-                    <label class="form-label" for="signupName">Full Name</label>
-                    <input 
-                        type="text" 
-                        class="form-input" 
-                        id="signupName" 
-                        placeholder="Enter your full name"
-                        required
-                    >
-                    <div class="error-message" id="signupNameError">Name is required</div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="signupEmail">Email</label>
-                    <input 
-                        type="email" 
-                        class="form-input" 
-                        id="signupEmail" 
-                        placeholder="Enter your email"
-                        required
-                    >
-                    <div class="error-message" id="signupEmailError">Please enter a valid email</div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="signupPassword">Password</label>
-                    <input 
-                        type="password" 
-                        class="form-input" 
-                        id="signupPassword" 
-                        placeholder="Create a password (min 6 characters)"
-                        required
-                        minlength="6"
-                    >
-                    <div class="error-message" id="signupPasswordError">Password must be at least 6 characters</div>
-                </div>
-
-                <button type="submit" class="auth-button" id="signupButton">
-                    <span class="button-text" id="createAccount">Create Account</span>
-                </button>
-            </form>
-        </div>
-
-        <div class="form-footer">
-            <p>Secure login powered by Firebase Authentication</p>
-        </div>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+        <span>Checking authentication...</span>
     </div>
 
-    <!-- Firebase Setup -->
+    <div id="app" class="hidden">
+        <header class="header">
+            <div class="header-left">
+                <button class="slide-button" id="sidebarToggle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="logo">CryptoDash</div>
+            </div>
+            <div class="header-right">
+                <button class="notification-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notification-badge"></span>
+                </button>
+                <button class="profile-btn" id="userInitials">JD</button>
+            </div>
+        </header>
+
+        <nav class="sidebar" id="sidebar">
+            <ul class="sidebar-nav">
+                <li><a href="#" data-page="dashboard" data-src="./Dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="#" data-page="portfolio" data-src="/portfolio.html">Portfolio</a></li>
+                <li><a href="#" data-page="trading" data-src="/trading.html">Trading</a></li>
+                <li><a href="#" data-page="markets" data-src="/markets.html">Markets</a></li>
+                <li><a href="#" data-page="history" data-src="/history.html">History</a></li>
+                <li><a href="#" data-page="settings" data-src="/settings.html">Settings</a></li>
+                <li><a href="#" data-page="support" data-src="/support.html">Support</a></li>
+            </ul>
+        </nav>
+
+        <div class="overlay" id="overlay"></div>
+
+        <main class="main-content" id="mainContent">
+            <iframe class="content-frame active" id="dashboard-frame" data-page="dashboard"></iframe>
+            <iframe class="content-frame" id="portfolio-frame" data-page="portfolio"></iframe>
+            <iframe class="content-frame" id="trading-frame" data-page="trading"></iframe>
+            <iframe class="content-frame" id="markets-frame" data-page="markets"></iframe>
+            <iframe class="content-frame" id="history-frame" data-page="history"></iframe>
+            <iframe class="content-frame" id="settings-frame" data-page="settings"></iframe>
+            <iframe class="content-frame" id="support-frame" data-page="support"></iframe>
+            <iframe class="content-frame" id="leaderboard-frame" data-page="leaderboard"></iframe>
+            <iframe class="content-frame" id="profile-frame" data-page="profile"></iframe>
+            <iframe class="content-frame" id="upgrade-frame" data-page="upgrade"></iframe>
+            <iframe class="content-frame" id="withdraw-frame" data-page="withdraw"></iframe>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" data-page="dashboard" data-src="./Dashboard.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                </svg>
+                <span>Home</span>
+            </a>
+            
+            <a href="#" class="nav-item" data-page="leaderboard" data-src="./mining.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 16v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4"></path>
+                    <rect x="6" y="12" width="12" height="8" rx="2"></rect>
+                    <path d="M8 12V8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4"></path>
+                </svg>
+                <span>Leaderboard</span>
+            </a>
+            
+            <a href="#" class="nav-item" data-page="profile" data-src="./profile.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Profile</span>
+            </a>
+            
+            <a href="#" class="nav-item" data-page="upgrade" data-src="/upgrade.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"></polygon>
+                </svg>
+                <span>Upgrade</span>
+            </a>
+            
+            <a href="#" class="nav-item" data-page="withdraw" data-src="./withdraw.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7,10 12,15 17,10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Withdraw</span>
+            </a>
+        </nav>
+    </div>
+
     <script type="module">
-       
-        // Firebase Setup and Authentication Script
-import firebaseConfig from './firebaseConfig.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import firebaseConfig from './firebaseConfig.js';
 
-// Import Firebase SDK modules
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword,
-    onAuthStateChanged
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { 
-    getDatabase, 
-    ref, 
-    set, 
-    get 
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
+        const $ = id => document.getElementById(id);
+        let currentUser = null;
 
-// DOM Elements Cache
-const elements = {
-    loginTab: document.getElementById('loginTab'),
-    signupTab: document.getElementById('signupTab'),
-    loginForm: document.getElementById('loginForm'),
-    signupForm: document.getElementById('signupForm'),
-    loginFormElement: document.getElementById('loginFormElement'),
-    signupFormElement: document.getElementById('signupFormElement'),
-    loginButton: document.getElementById('loginButton'),
-    signupButton: document.getElementById('signupButton'),
-    successMessage: document.getElementById('successMessage'),
-    inputs: {
-        loginEmail: document.getElementById('loginEmail'),
-        loginPassword: document.getElementById('loginPassword'),
-        signupName: document.getElementById('signupName'),
-        signupEmail: document.getElementById('signupEmail'),
-        signupPassword: document.getElementById('signupPassword')
-    },
-    errors: {
-        loginEmail: document.getElementById('loginEmailError'),
-        loginPassword: document.getElementById('loginPasswordError'),
-        signupName: document.getElementById('signupNameError'),
-        signupEmail: document.getElementById('signupEmailError'),
-        signupPassword: document.getElementById('signupPasswordError')
-    }
-};
-
-// Application State
-const appState = {
-    currentTab: 'login',
-    isProcessing: false
-};
-
-// Utility Functions
-const utils = {
-    validateEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    },
-
-    showError(inputId, errorId, message) {
-        const input = elements.inputs[inputId];
-        const error = elements.errors[errorId];
-        
-        if (input && error) {
-            input.classList.add('error');
-            error.textContent = message;
-            error.classList.add('show');
-        }
-    },
-
-    clearError(inputId, errorId) {
-        const input = elements.inputs[inputId];
-        const error = elements.errors[errorId];
-        
-        if (input && error) {
-            input.classList.remove('error');
-            error.classList.remove('show');
-        }
-    },
-
-    clearAllErrors() {
-        Object.keys(elements.inputs).forEach(inputId => {
-            const errorId = inputId.replace(/([A-Z])/g, (match, letter) => 
-                letter === 'E' ? 'E' : letter
-            );
-            this.clearError(inputId, errorId);
-        });
-    },
-
-    showLoading(button, isLoading, loadingText = 'Processing...') {
-        if (!button) return;
-        
-        // Store original text if not already stored
-        if (!button.dataset.originalText) {
-            const buttonTextElement = button.querySelector('.button-text');
-            button.dataset.originalText = buttonTextElement ? 
-                buttonTextElement.textContent : 
-                button.textContent.trim();
-        }
-        
-        if (isLoading) {
-            button.disabled = true;
-            button.innerHTML = `<div class="loading-spinner"></div>${loadingText}`;
-            appState.isProcessing = true;
-        } else {
-            button.disabled = false;
-            button.innerHTML = `<span class="button-text">${button.dataset.originalText}</span>`;
-            appState.isProcessing = false;
-        }
-    },
-
-    showSuccess(message) {
-        if (elements.successMessage) {
-            elements.successMessage.textContent = message;
-            elements.successMessage.classList.add('show');
-        }
-    },
-
-    hideSuccess() {
-        if (elements.successMessage) {
-            elements.successMessage.classList.remove('show');
-        }
-    }
-};
-
-// Tab Management
-const tabManager = {
-    init() {
-        // Set initial state
-        this.switchTab('login');
-        
-        // Add event listeners
-        elements.loginTab?.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchTab('login');
-        });
-
-        elements.signupTab?.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchTab('signup');
-        });
-    },
-
-    switchTab(tab) {
-        console.log('Switching to tab:', tab);
-        
-        if (appState.isProcessing) {
-            console.log('Cannot switch tabs while processing');
-            return;
-        }
-        
-        // Clear all form errors
-        utils.clearAllErrors();
-        utils.hideSuccess();
-        
-        // Update tab states
-        elements.loginTab?.classList.remove('active');
-        elements.signupTab?.classList.remove('active');
-        elements.loginForm?.classList.add('hidden');
-        elements.signupForm?.classList.add('hidden');
-        
-        if (tab === 'login') {
-            elements.loginTab?.classList.add('active');
-            elements.loginForm?.classList.remove('hidden');
-        } else if (tab === 'signup') {
-            elements.signupTab?.classList.add('active');
-            elements.signupForm?.classList.remove('hidden');
-        }
-        
-        appState.currentTab = tab;
-    }
-};
-
-// Form Validation
-const validator = {
-    validateLoginForm(formData) {
-        const errors = {};
-        
-        if (!formData.email) {
-            errors.loginEmail = 'Email is required';
-        } else if (!utils.validateEmail(formData.email)) {
-            errors.loginEmail = 'Please enter a valid email';
-        }
-        
-        if (!formData.password) {
-            errors.loginPassword = 'Password is required';
-        }
-        
-        return {
-            isValid: Object.keys(errors).length === 0,
-            errors
+        const showAccountModal = (type, reason) => {
+            const modal = document.createElement('div');
+            modal.className = 'account-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icon ${type}">
+                        ${type === 'banned' ? '🚫' : '⏸️'}
+                    </div>
+                    <h2 class="modal-title">Account ${type === 'banned' ? 'Banned' : 'Suspended'}</h2>
+                    <p class="modal-message">
+                        Your account has been ${type === 'banned' ? 'permanently banned' : 'temporarily suspended'}.
+                        ${type === 'suspended' ? 'Please contact support for more information.' : ''}
+                    </p>
+                    ${reason ? `<div class="modal-reason">Reason: ${reason}</div>` : ''}
+                    <button class="modal-btn" onclick="logout()">Sign Out</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
         };
-    },
 
-    validateSignupForm(formData) {
-        const errors = {};
-        
-        if (!formData.name?.trim()) {
-            errors.signupName = 'Name is required';
-        } else if (formData.name.trim().length < 2) {
-            errors.signupName = 'Name must be at least 2 characters';
-        }
-        
-        if (!formData.email) {
-            errors.signupEmail = 'Email is required';
-        } else if (!utils.validateEmail(formData.email)) {
-            errors.signupEmail = 'Please enter a valid email';
-        }
-        
-        if (!formData.password) {
-            errors.signupPassword = 'Password is required';
-        } else if (formData.password.length < 6) {
-            errors.signupPassword = 'Password must be at least 6 characters';
-        }
-        
-        return {
-            isValid: Object.keys(errors).length === 0,
-            errors
-        };
-    },
-
-    displayErrors(errors) {
-        Object.entries(errors).forEach(([field, message]) => {
-            const errorField = field.replace('signup', '').replace('login', '').toLowerCase();
-            utils.showError(field, field, message);
-        });
-    }
-};
-
-// Database Operations
-const dbOperations = {
-    async createUserProfile(uid, userData) {
-        try {
-            const userRef = ref(database, `users/${uid}`);
-            const initialData = {
-                profile: {
-                    name: userData.name,
-                    email: userData.email,
-                    joinDate: new Date().toISOString(),
-                    uid: uid
-                },
-                wallet: {
-                    btcBalance: 0,
-                    usdValue: 0,
-                    totalValue: 0
-                },
-                transactions: {},
-                marketData: {
-                    btcPrice: 0,
-                    ethPrice: 0,
-                    lastUpdated: new Date().toISOString()
+        const checkUserStatus = async (user) => {
+            try {
+                const userRef = ref(db, `users/${user.uid}`);
+                const snapshot = await get(userRef);
+                
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    const status = userData.status;
+                    const reason = userData.actionReason;
+                    
+                    if (status === 'banned') {
+                        showAccountModal('banned', reason);
+                        return false;
+                    }
+                    
+                    if (status === 'suspended') {
+                        const suspendedUntil = userData.suspendedUntil;
+                        if (suspendedUntil && new Date(suspendedUntil) > new Date()) {
+                            showAccountModal('suspended', reason);
+                            return false;
+                        }
+                    }
+                    
+                    // Update user initials
+                    const initials = userData.name ? userData.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
+                    $('userInitials').textContent = initials;
                 }
-            };
-            
-            await set(userRef, initialData);
-            console.log('User profile created for UID:', uid);
-            return true;
-        } catch (error) {
-            console.error('Error creating user profile:', error);
-            throw error;
-        }
-    },
+                
+                return true;
+            } catch (error) {
+                console.error('Error checking user status:', error);
+                return true; // Allow access on error
+            }
+        };
 
-    async getUserProfile(uid) {
-        try {
-            const userRef = ref(database, `users/${uid}`);
-            const snapshot = await get(userRef);
-            return snapshot.exists() ? snapshot.val() : null;
-        } catch (error) {
-            console.error('Error fetching user profile:', error);
-            throw error;
-        }
-    }
-};
+        const redirectToLogin = () => {
+            window.location.href = './login.html';
+        };
 
-// Authentication Handlers
-const authHandlers = {
-    async handleLogin(formData) {
-        try {
-            utils.showLoading(elements.loginButton, true, 'Signing in...');
-            
-            const userCredential = await signInWithEmailAndPassword(
-                auth, 
-                formData.email, 
-                formData.password
-            );
-            
-            console.log('User logged in:', userCredential.user.uid);
-            
-            // Small delay to show success state
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Redirect to dashboard
-            window.location.href = 'dashboard.html';
-            
-        } catch (error) {
-            utils.showLoading(elements.loginButton, false);
-            console.error('Login error:', error);
-            
-            this.handleLoginError(error);
-        }
-    },
+        window.logout = async () => {
+            try {
+                await signOut(auth);
+                redirectToLogin();
+            } catch (error) {
+                console.error('Logout error:', error);
+                redirectToLogin();
+            }
+        };
 
-    async handleSignup(formData) {
-        try {
-            utils.showLoading(elements.signupButton, true, 'Creating account...');
-            
-            const userCredential = await createUserWithEmailAndPassword(
-                auth, 
-                formData.email, 
-                formData.password
-            );
-            
-            const user = userCredential.user;
-            
-            // Create user profile in database
-            await dbOperations.createUserProfile(user.uid, {
-                name: formData.name.trim(),
-                email: formData.email
-            });
-            
-            console.log('User account created:', user.uid);
-            
-            utils.showLoading(elements.signupButton, false);
-            
-            // Show success message and switch to login
-            utils.showSuccess('Account created successfully! You can now log in.');
-            tabManager.switchTab('login');
-            
-            // Clear signup form
-            elements.signupFormElement?.reset();
-            
-        } catch (error) {
-            utils.showLoading(elements.signupButton, false);
-            console.error('Signup error:', error);
-            
-            this.handleSignupError(error);
-        }
-    },
+        const initApp = () => {
+            $('loadingScreen').classList.add('hidden');
+            $('app').classList.remove('hidden');
+            showPage('dashboard');
+        };
 
-    handleLoginError(error) {
-        let errorField = 'loginPassword';
-        let errorMessage = 'Login failed. Please try again.';
-        
-        switch (error.code) {
-            case 'auth/user-not-found':
-                errorField = 'loginEmail';
-                errorMessage = 'No account found with this email';
-                break;
-            case 'auth/wrong-password':
-                errorField = 'loginPassword';
-                errorMessage = 'Incorrect password';
-                break;
-            case 'auth/invalid-email':
-                errorField = 'loginEmail';
-                errorMessage = 'Invalid email address';
-                break;
-            case 'auth/invalid-credential':
-                errorField = 'loginPassword';
-                errorMessage = 'Invalid email or password';
-                break;
-            case 'auth/too-many-requests':
-                errorField = 'loginPassword';
-                errorMessage = 'Too many failed attempts. Try again later.';
-                break;
-            case 'auth/network-request-failed':
-                errorField = 'loginPassword';
-                errorMessage = 'Network error. Please check your connection.';
-                break;
-        }
-        
-        utils.showError(errorField, errorField, errorMessage);
-    },
-
-    handleSignupError(error) {
-        let errorField = 'signupPassword';
-        let errorMessage = 'Account creation failed. Please try again.';
-        
-        switch (error.code) {
-            case 'auth/email-already-in-use':
-                errorField = 'signupEmail';
-                errorMessage = 'An account with this email already exists';
-                break;
-            case 'auth/invalid-email':
-                errorField = 'signupEmail';
-                errorMessage = 'Invalid email address';
-                break;
-            case 'auth/weak-password':
-                errorField = 'signupPassword';
-                errorMessage = 'Password is too weak. Use at least 6 characters.';
-                break;
-            case 'auth/network-request-failed':
-                errorField = 'signupPassword';
-                errorMessage = 'Network error. Please check your connection.';
-                break;
-        }
-        
-        utils.showError(errorField, errorField, errorMessage);
-    }
-};
-
-// Form Event Handlers
-const formHandlers = {
-    setupLoginForm() {
-        elements.loginFormElement?.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        const showPage = (pageId) => {
+            document.querySelectorAll('.content-frame').forEach(frame => frame.classList.remove('active'));
+            document.querySelectorAll('.nav-item, .sidebar-nav a').forEach(item => item.classList.remove('active'));
             
-            if (appState.isProcessing) return;
-            
-            const formData = {
-                email: elements.inputs.loginEmail?.value || '',
-                password: elements.inputs.loginPassword?.value || ''
-            };
-            
-            // Clear previous errors
-            utils.clearError('loginEmail', 'loginEmail');
-            utils.clearError('loginPassword', 'loginPassword');
-            
-            // Validate form
-            const validation = validator.validateLoginForm(formData);
-            if (!validation.isValid) {
-                validator.displayErrors(validation.errors);
-                return;
+            const targetFrame = $(`${pageId}-frame`);
+            if (targetFrame) {
+                targetFrame.classList.add('active');
+                
+                const navItem = document.querySelector(`[data-page="${pageId}"]`);
+                const srcUrl = navItem?.getAttribute('data-src');
+                
+                if (srcUrl && !targetFrame.src) {
+                    targetFrame.src = srcUrl;
+                }
             }
             
-            // Attempt login
-            await authHandlers.handleLogin(formData);
-        });
-    },
+            document.querySelectorAll(`[data-page="${pageId}"]`).forEach(item => item.classList.add('active'));
+        };
 
-    setupSignupForm() {
-        elements.signupFormElement?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-        
-            
-            if (appState.isProcessing) return;
-            
-            const formData = {
-                name: elements.inputs.signupName?.value || '',
-                email: elements.inputs.signupEmail?.value || '',
-                password: elements.inputs.signupPassword?.value || ''
-            };
-            localStorage.setItem('userName', formData.name.trim());
-            
-            // Clear previous errors
-            utils.clearError('signupName', 'signupName');
-            utils.clearError('signupEmail', 'signupEmail');
-            utils.clearError('signupPassword', 'signupPassword');
-             
-            // Validate form
-            const validation = validator.validateSignupForm(formData);
-            if (!validation.isValid) {
-                console.log('account created successfully');
-                validator.displayErrors(validation.errors);
-               
-                return;
-            }
-            
-            // Attempt signup
-            await authHandlers.handleSignup(formData);
-            
-        
-        
-        });
-    },
-
-    setupInputValidation() {
-        // Real-time validation for better UX
-        Object.entries(elements.inputs).forEach(([inputId, input]) => {
-            input?.addEventListener('input', () => {
-                utils.clearError(inputId, inputId);
+        // Navigation handlers
+        document.querySelectorAll('.nav-item, .sidebar-nav a').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const pageId = this.getAttribute('data-page');
+                showPage(pageId);
+                
+                // Close sidebar on mobile
+                if (window.innerWidth <= 768) {
+                    $('sidebar').classList.remove('open');
+                    $('mainContent').classList.remove('sidebar-open');
+                    $('overlay').classList.remove('active');
+                }
             });
         });
-    }
-};
 
-// Auth State Management
-const authStateManager = {
-    init() {
-        onAuthStateChanged(auth, (user) => {
+        // Sidebar toggle
+        $('sidebarToggle').addEventListener('click', () => {
+            $('sidebar').classList.toggle('open');
+            $('mainContent').classList.toggle('sidebar-open');
+            $('overlay').classList.toggle('active');
+        });
+
+        $('overlay').addEventListener('click', () => {
+            $('sidebar').classList.remove('open');
+            $('mainContent').classList.remove('sidebar-open');
+            $('overlay').classList.remove('active');
+        });
+
+        // Auth state listener
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                console.log('User already logged in, redirecting...');
-                // Small delay to prevent jarring redirect
-                setTimeout(() => {
-                    window.location.href = 'homepage.html';
-                }, 100);
+                currentUser = user;
+                const canAccess = await checkUserStatus(user);
+                if (canAccess) {
+                    initApp();
+                }
+            } else {
+                redirectToLogin();
             }
         });
-    }
-};
-
-// Application Initialization
-const app_init = {
-    async init() {
-        try {
-            console.log('Initializing CryptoDash Login...');
-            
-            // Check if all required elements exist
-            this.validateDOMElements();
-            
-            // Initialize components
-            tabManager.init();
-            authStateManager.init();
-            formHandlers.setupLoginForm();
-            formHandlers.setupSignupForm();
-            formHandlers.setupInputValidation();
-            
-            console.log('CryptoDash Login initialized successfully');
-            
-        } catch (error) {
-            console.error('Failed to initialize application:', error);
-        }
-    },
-
-    validateDOMElements() {
-        const requiredElements = [
-            'loginTab', 'signupTab', 'loginForm', 'signupForm',
-            'loginFormElement', 'signupFormElement', 'loginButton', 'signupButton'
-        ];
-        
-        const missingElements = requiredElements.filter(id => !elements[id]);
-        
-        if (missingElements.length > 0) {
-            console.warn('Missing DOM elements:', missingElements);
-        }
-        
-        const missingInputs = Object.entries(elements.inputs)
-            .filter(([key, element]) => !element)
-            .map(([key]) => key);
-            
-        if (missingInputs.length > 0) {
-            console.warn('Missing input elements:', missingInputs);
-        }
-    }
-};
-
-// Initialize when DOM is loaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => app_init.init());
-} else {
-    app_init.init();
-}
-
-
     </script>
 </body>
 </html>
