@@ -244,7 +244,7 @@
 
         .trade-item {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             padding: 12px;
             background: var(--geist-hover);
@@ -300,7 +300,7 @@
         .connection-status {
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            left: 20px;
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 12px;
@@ -309,6 +309,7 @@
             align-items: center;
             gap: 6px;
             transition: all 0.3s ease;
+            z-index: 1000;
         }
 
         .connection-online {
@@ -357,14 +358,11 @@
                     <p class="user-name" id="userName">Loading...</p>
                 </div>
                 <div class="wallet-section">
-                  <a href="upgrade.html" style="text-decoration: none;">
-                      <button class="fund-wallet-btn" id="fundWalletBtn">
+                    <button class="fund-wallet-btn" id="fundWalletBtn">
                         <span>+</span>
                         Fund Wallet
                     </button>
-                  </a>
-                 
-                        
+                    <div class="balance-section">
                         <div class="balance-item">
                             <div class="balance-label">USD Value</div>
                             <div class="balance-value usd-value" id="usdValue">Loading...</div>
@@ -381,7 +379,7 @@
                 <div class="card-header">
                     <div>
                         <h3 class="card-title">Transaction History</h3>
-                        <p class="card-subtitle">All your transactions and trading activity</p>
+                        <p class="card-subtitle">Recent transactions and trading activity</p>
                     </div>
                     <div class="status-indicator status-online">
                         <span class="status-dot"></span>
@@ -429,7 +427,7 @@
     <!-- Connection Status -->
     <div class="connection-status connection-online" id="connectionStatus">
         <span class="status-dot"></span>
-        Connected to Firebase
+        Connected
     </div>
 
     <!-- Firebase SDK -->
@@ -445,8 +443,10 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const auth = getAuth(app);
 
-// Current user UID
+// Current user UID and connection state
 let currentUserUID = null;
+let isFirebaseConnected = false;
+let isUserAuthenticated = false;
 
 // DOM Elements
 const connectionStatus = document.getElementById('connectionStatus');
@@ -466,10 +466,10 @@ async function initializeData(uid) {
         const snapshot = await get(userRef);
         
         if (!snapshot.exists()) {
-            // Create initial user data with same structure as mining app
+            // Create initial user data with default name
             const initialData = {
                 profile: {
-                    name: "",
+                    name: "Crypto Trader", // Default name
                     email: "",
                     joinDate: new Date().toISOString(),
                     uid: uid
@@ -500,14 +500,27 @@ async function initializeData(uid) {
 }
 
 // Update connection status
-function updateConnectionStatus(isOnline) {
-    if (isOnline) {
-        connectionStatus.className = 'connection-status connection-online';
-        connectionStatus.innerHTML = '<span class="status-dot"></span>Connected to Firebase';
+function updateConnectionStatus(isOnline, isAuthenticated = false) {
+    let statusText = '';
+    let statusClass = '';
+    
+    if (!isOnline) {
+        statusText = 'Connection failed';
+        statusClass = 'connection-status connection-offline';
+    } else if (!isAuthenticated) {
+        statusText = 'Connecting...';
+        statusClass = 'connection-status connection-offline';
     } else {
-        connectionStatus.className = 'connection-status connection-offline';
-        connectionStatus.innerHTML = '<span class="status-dot"></span>Connection lost';
+        statusText = 'Connected & Authenticated';
+        statusClass = 'connection-status connection-online';
     }
+    
+    connectionStatus.className = statusClass;
+    connectionStatus.innerHTML = `<span class="status-dot"></span>${statusText}`;
+    
+    // Update global state
+    isFirebaseConnected = isOnline;
+    isUserAuthenticated = isAuthenticated;
 }
 
 // Load user data
@@ -518,10 +531,12 @@ function loadUserData(uid) {
         if (snapshot.exists()) {
             const data = snapshot.val();
             
-            // Update profile
-            if (data.profile) {
-                const displayName = data.profile.name || 'Please set your name';
-                userName.textContent = displayName;
+            // Update profile - Fixed to properly display name
+            if (data.profile && data.profile.name) {
+                userName.textContent = data.profile.name;
+            } else {
+                // If no name is set, show default
+                userName.textContent = 'Crypto Trader';
             }
             
             // Update wallet - using usdBalance path from mining app
@@ -548,13 +563,14 @@ function loadUserData(uid) {
                 ethPrice.textContent = 'Loading...';
             }
             
-            updateConnectionStatus(true);
+            updateConnectionStatus(true, true);
         } else {
             console.log('No user data found');
+            updateConnectionStatus(true, false);
         }
     }, (error) => {
         console.error('Error loading user data:', error);
-        updateConnectionStatus(false);
+        updateConnectionStatus(false, false);
     });
 }
 
@@ -580,8 +596,9 @@ function loadTransactions(uid) {
                 lastActivity.textContent = 'No activity';
             }
             
-            // Display all transactions
-            displayTransactions(transactionArray);
+            // Display only first 4 transactions
+            const recentTransactions = transactionArray.slice(0, 4);
+            displayTransactions(recentTransactions);
         } else {
             tradingList.innerHTML = '<div class="trade-item"><div class="trade-info">No transactions found</div></div>';
             totalTransactions.textContent = '0';
@@ -593,6 +610,11 @@ function loadTransactions(uid) {
 // Display transactions
 function displayTransactions(transactions) {
     tradingList.innerHTML = '';
+    
+    if (transactions.length === 0) {
+        tradingList.innerHTML = '<div class="trade-item"><div class="trade-info">No recent transactions</div></div>';
+        return;
+    }
     
     transactions.forEach(transaction => {
         const tradeItem = document.createElement('div');
@@ -632,7 +654,10 @@ function getTimeAgo(timestamp) {
     return 'Just now';
 }
 
-
+// Fund wallet button handler - redirect to /fund
+fundWalletBtn.addEventListener('click', () => {
+    window.location.href = '/upgrade.html';
+});
 
 // Get current market prices (mock)
 async function getCurrentBtcPrice() {
@@ -679,17 +704,28 @@ async function updateMarketData(uid) {
 }
 
 // Authentication state handler
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUserUID = user.uid;
         console.log('User authenticated with UID:', currentUserUID);
-        initializeUserData(currentUserUID);
+        updateConnectionStatus(true, true);
+        await initializeUserData(currentUserUID);
     } else {
         console.log('User not authenticated, signing in anonymously...');
-        signInAnonymously(auth).catch((error) => {
+        updateConnectionStatus(true, false);
+        
+        try {
+            const userCredential = await signInAnonymously(auth);
+            console.log('Anonymous sign-in successful');
+        } catch (error) {
             console.error('Error with anonymous authentication:', error);
-            updateConnectionStatus(false);
-        });
+            updateConnectionStatus(false, false);
+            
+            // Show error in UI
+            userName.textContent = 'Authentication failed';
+            usdValue.textContent = 'Error';
+            tradingList.innerHTML = '<div class="trade-item"><div class="trade-info" style="color: #ef4444;">Authentication error - please refresh page</div></div>';
+        }
     }
 });
 
@@ -702,37 +738,52 @@ async function initializeUserData(uid) {
         
         // Update market data every 30 seconds
         const marketInterval = setInterval(() => updateMarketData(uid), 30000);
-        updateMarketData(uid);
+        await updateMarketData(uid);
         
         console.log('Dashboard initialized successfully for UID:', uid);
     } catch (error) {
         console.error('Error initializing user data:', error);
-        updateConnectionStatus(false);
+        updateConnectionStatus(false, false);
+        
+        // Show error in UI
+        userName.textContent = 'Connection failed';
+        usdValue.textContent = 'Error';
+        tradingList.innerHTML = '<div class="trade-item"><div class="trade-info" style="color: #ef4444;">Failed to connect to database</div></div>';
     }
 }
 
-console.log('Starting USD dashboard with Firebase Authentication...');
-
-// Get user data from Firebase
-const userRef = ref(database, `users/${uid}`);
-onValue(userRef, (snapshot) => {
-    const userData = snapshot.val();
-    if (!userData) {
-        showAlert('No user data found');
-        return;
+// Test Firebase connection on startup
+async function testFirebaseConnection() {
+    try {
+        console.log('Testing Firebase connection...');
+        updateConnectionStatus(false, false);
+        
+        // Test database connection
+        const testRef = ref(database, '.info/connected');
+        onValue(testRef, (snapshot) => {
+            if (snapshot.val() === true) {
+                console.log('Database connected');
+                isFirebaseConnected = true;
+                if (isUserAuthenticated) {
+                    updateConnectionStatus(true, true);
+                }
+            } else {
+                console.log('Database disconnected');
+                isFirebaseConnected = false;
+                updateConnectionStatus(false, false);
+            }
+        });
+        
+    } catch (error) {
+        console.error('Firebase connection test failed:', error);
+        updateConnectionStatus(false, false);
     }
+}
 
-    const profile = userData.profile || {};
-    
-    // 👇 This logic decides what name to display
-    const displayName = profile.firstName 
-        ? `${profile.firstName} ${profile.lastName || ''}`.trim()
-        : profile.username || userEmail?.split('@')[0] || 'User';
-    
-    // 👇 This line actually updates the page
-    console.log(displayName);
-   
-});
+// Start connection test
+testFirebaseConnection();
+
+console.log('Starting USD dashboard with authentication...');
     </script>
 </body>
 </html>
