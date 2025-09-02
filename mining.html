@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bitcoin Mining App</title>
+    <title>Mining Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -12,11 +12,10 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: #fefbf6;
             color: #171717;
             line-height: 1.6;
-            position: relative;
         }
 
         .container {
@@ -58,34 +57,13 @@
             color: #16a34a;
         }
 
-        .auth-guest {
-            background: #fff7ed;
-            color: #ea580c;
-        }
-
-        .level-button {
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: #ea580c;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .level-button:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
+        .auth-unauthenticated {
+            background: #fef2f2;
+            color: #dc2626;
         }
 
         .balance-display {
             margin-bottom: 2rem;
-            text-align: left;
         }
 
         .balance-label {
@@ -119,37 +97,24 @@
             width: 200px;
             height: 150px;
             margin: 1rem auto;
-            background: transparent;
-            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-        }
-
-        .mining-gif {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: none;
-        }
-
-        .mining-gif.active {
-            display: block;
         }
 
         .mining-placeholder {
             font-size: 4rem;
             color: #ea580c;
+            transition: transform 0.3s ease;
         }
 
         .mining-placeholder.mining {
-            display: none;
+            animation: pulse 1s infinite;
         }
 
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.2); }
         }
 
         .countdown {
@@ -157,6 +122,7 @@
             font-weight: 600;
             margin: 1rem 0;
             color: #ea580c;
+            display: none;
         }
 
         .mining-status {
@@ -165,9 +131,6 @@
             padding: 0.5rem 1rem;
             border-radius: 6px;
             display: inline-block;
-        }
-
-        .status-idle {
             background: #fff7ed;
             color: #ea580c;
         }
@@ -175,11 +138,6 @@
         .status-mining {
             background: #dcfce7;
             color: #16a34a;
-        }
-
-        .status-error {
-            background: #fef2f2;
-            color: #dc2626;
         }
 
         .btn {
@@ -208,7 +166,7 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -218,6 +176,11 @@
             border: 1px solid #e5e5e5;
             border-radius: 8px;
             padding: 1.5rem;
+        }
+
+        .stat-card.mining-active {
+            border-color: #16a34a;
+            background: #f0fdf4;
         }
 
         .stat-title {
@@ -233,6 +196,36 @@
             font-size: 1.5rem;
             font-weight: 600;
             color: #000;
+        }
+
+        .mining-progress {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .mining-progress.active {
+            display: block;
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e5e5;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #16a34a, #22c55e);
+            transition: width 0.3s ease;
         }
 
         .transactions {
@@ -284,11 +277,6 @@
             font-size: 0.9rem;
         }
 
-        .transaction-description {
-            color: #666;
-            font-size: 0.8rem;
-        }
-
         .transaction-amount {
             font-weight: 600;
         }
@@ -307,41 +295,6 @@
             color: #666;
         }
 
-        
-        .btn-secondary {
-            background: #f5f5f5;
-            color: #000;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            flex: 1;
-        }
-
-        .btn-secondary:hover {
-            background: #e5e5e5;
-        }
-
-        .btn-primary {
-            background: #ea580c;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 500;
-            flex: 2;
-        }
-
-        .btn-primary:hover {
-            background: #dc2626;
-        }
-
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -355,7 +308,7 @@
                 font-size: 1.5rem;
             }
 
-            .auth-status, .level-button {
+            .auth-status {
                 position: relative;
                 margin: 0.5rem;
             }
@@ -365,9 +318,9 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="auth-status" id="authStatus">Guest User</div>
+            <div class="auth-status" id="authStatus">Checking...</div>
             <h1>⛏️ Mining Dashboard</h1>
-            <p id="currentLevelText">Current Level: Professional</p>
+            <p id="currentLevelText">Current Level: Beginner</p>
         </div>
 
         <div class="balance-display">
@@ -375,44 +328,42 @@
             <div class="balance-amount">$<span id="balance">0.00</span></div>
         </div>
 
-        
-
         <div class="stats-grid">
-            <div class="stat-card">
+            <div class="stat-card" id="balanceCard">
                 <div class="stat-title">Total Mined</div>
                 <div class="stat-value">$<span id="totalMined">0.00</span></div>
             </div>
-            <div class="stat-card">
-                <div class="stat-title">BTC Balance</div>
-                <div class="stat-value"><span id="btcBalance">0.00000000</span></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title">USD Value</div>
-                <div class="stat-value">$<span id="usdValue">0.00</span></div>
-            </div>
-            <div class="stat-card">
+            <div class="stat-card" id="sessionsCard">
                 <div class="stat-title">Mining Sessions</div>
                 <div class="stat-value" id="sessions">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-title">Success Rate</div>
-                <div class="stat-value" id="successRate">100%</div>
+            <div class="stat-card" id="rateCard">
+                <div class="stat-title">Current Rate</div>
+                <div class="stat-value">$<span id="currentRate">0.00</span>/hour</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-title">Avg. Reward</div>
-                <div class="stat-value">$<span id="avgReward">0.00</span></div>
+            <div class="stat-card" id="earnedCard">
+                <div class="stat-title">Session Earned</div>
+                <div class="stat-value">$<span id="sessionEarned">0.00</span></div>
             </div>
+        </div>
+
+        <div class="mining-progress" id="miningProgress">
+            <h3>Mining Progress</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p id="progressText">0% complete</p>
         </div>
 
         <div class="mining-section">
             <div class="mining-animation">
-                <img src="./mining.gif" alt="Mining Animation" class="mining-gif" id="miningGif">
+                <img src="mining.gif" alt="Mining Animation" id="miningGif" style="width: 200px; height: 150px; object-fit: contain; display: none;">
                 <div class="mining-placeholder" id="miningPlaceholder">⛏️</div>
             </div>
             
-            <div class="mining-status status-idle" id="status">Ready to Mine</div>
+            <div class="mining-status" id="status">Ready to Mine</div>
             
-            <div class="countdown" id="countdown" style="display: none;">23:59:59</div>
+            <div class="countdown" id="countdown">01:00</div>
             
             <button class="btn" id="miningBtn" onclick="toggleMining()">Start Mining</button>
         </div>
@@ -430,532 +381,242 @@
     </div>
 
 <script type="module">
-    // Import Firebase modules
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { 
-        getAuth, 
-        onAuthStateChanged
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { 
-        getDatabase, 
-        ref, 
-        set, 
-        get, 
-        onValue,
-        update
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-    import { 
-        getFirestore, 
-        doc, 
-        getDoc,
-        updateDoc,
-        collection,
-        addDoc,
-        query,
-        orderBy,
-        limit,
-        getDocs,
-        serverTimestamp
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-    // Import Firebase config
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
     import firebaseConfig from './firebaseConfig.js';
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const database = getDatabase(app);
     const firestore = getFirestore(app);
 
-    // Global variables
-    let isMining = false;
-    let miningTimer = null;
-    let countdownTimer = null;
-    let timeRemaining = 0;
-    let currentUser = null;
-    const btcPrice = 113000; // Fixed BTC price
-    
-    // User data structure
-    let userData = {
-        wallet: {
-            btcBalance: 0,
-            usdValue: 0,
-            totalValue: 0
-        },
-        totalMined: 0,
-        sessions: 0,
-        transactions: {}, // Object instead of array
-        level: "1" // String to match Firebase structure
+    let isMining = false, payoutTimer = null, countdownTimer = null, currentUser = null;
+    let userData = { wallet: { usdBalance: 0 }, totalMined: 0, sessions: 0, level: "1", miningState: null };
+
+    const LEVELS = {
+        "1": { name: "Beginner", cost: 100, dailyRate: 50, days: 1, payoutInterval: 60000, get minuteRate() { return this.dailyRate / 1440; } },
+        "2": { name: "Professional", cost: 500, dailyRate: 200, days: 3, payoutInterval: 3600000, get hourlyRate() { return this.dailyRate / 24; } },
+        "3": { name: "Expert", cost: 1000, dailyRate: 350, days: 5, payoutInterval: 3600000, get hourlyRate() { return this.dailyRate / 24; } },
+        "4": { name: "Master", cost: 2500, dailyRate: 600, days: 7, payoutInterval: 3600000, get hourlyRate() { return this.dailyRate / 24; } },
+        "5": { name: "Legendary", cost: 5000, dailyRate: 1000, days: 10, payoutInterval: 3600000, get hourlyRate() { return this.dailyRate / 24; } }
     };
 
-    // Mining cost based on level
-    const MINING_COSTS = {
-        "1": 100,    // Level 1: $100
-        "2": 200,    // Level 2: $200
-        "3": 350,    // Level 3: $350
-        "4": 500,    // Level 4: $500
-        "5": 750     // Level 5: $750
-    };
-
-    // Mining rewards based on level (24-hour session)
-    const MINING_REWARDS = {
-        "1": 150,    // Level 1: $150 reward
-        "2": 300,    // Level 2: $300 reward
-        "3": 525,    // Level 3: $525 reward
-        "4": 750,    // Level 4: $750 reward
-        "5": 1125    // Level 5: $1125 reward
-    };
-
-    // Level names
-    const LEVEL_NAMES = {
-        "1": "Beginner",
-        "2": "Professional", 
-        "3": "Expert",
-        "4": "Master",
-        "5": "Legendary"
-    };
-
-    // Authentication state listener
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
-        updateAuthStatus();
+        const authStatus = document.getElementById('authStatus');
+        const btn = document.getElementById('miningBtn');
+        
         if (user) {
+            authStatus.textContent = `✓ ${user.email}`;
+            authStatus.className = 'auth-status auth-authenticated';
+            btn.disabled = false;
             loadUserData();
         } else {
-            // Guest mode - use local storage
-            loadGuestData();
+            authStatus.textContent = '❌ Not Authenticated';
+            authStatus.className = 'auth-status auth-unauthenticated';
+            btn.disabled = true;
+            btn.textContent = 'Login Required';
+            resetDisplay();
         }
     });
 
-    function updateAuthStatus() {
-        const authStatus = document.getElementById('authStatus');
-        if (currentUser) {
-            authStatus.textContent = `✓ ${currentUser.email}`;
-            authStatus.className = 'auth-status auth-authenticated';
-        } else {
-            authStatus.textContent = 'Guest User';
-            authStatus.className = 'auth-status auth-guest';
-        }
-    }
-
-    // Load user data from Firebase
-    async function loadUserData() {
-        if (!currentUser) return;
-
-        try {
-            // Load from Realtime Database
-            const userRef = ref(database, `users/${currentUser.uid}`);
-            onValue(userRef, (snapshot) => {
+    function loadUserData() {
+        const userRef = ref(database, `users/${currentUser.uid}`);
+        onValue(userRef, (snapshot) => {
+            if (snapshot.exists()) {
                 const data = snapshot.val();
-                if (data) {
-                    userData = {
-                        wallet: data.wallet || { btcBalance: 0, usdValue: 0, totalValue: 0 },
-                        totalMined: data.totalMined || 0,
-                        sessions: data.sessions || 0,
-                        transactions: data.transactions || {},
-                        level: String(data.level || "1") // Ensure string format
-                    };
-                    
-                    // Recalculate USD values with fixed BTC price
-                    if (userData.wallet.btcBalance > 0) {
-                        userData.wallet.usdValue = userData.wallet.btcBalance * btcPrice;
-                        userData.wallet.totalValue = userData.wallet.usdValue;
-                    }
-                    
-                    console.log('Loaded user level from Firebase:', userData.level);
-                    updateDisplay();
-                }
-            });
-
-            // Load transactions from Firestore
-            loadTransactions();
-        } catch (error) {
-            console.error('Error loading user data:', error);
-            document.getElementById('status').textContent = 'Error loading data. Please check connection.';
-            document.getElementById('status').className = 'mining-status status-error';
-        }
-    }
-
-    // Load guest data from localStorage
-    function loadGuestData() {
-        try {
-            const guestData = localStorage.getItem('miningGuestData');
-            if (guestData) {
-                const parsedData = JSON.parse(guestData);
-                userData = {
-                    wallet: parsedData.wallet || { btcBalance: 0, usdValue: 0, totalValue: 0 },
-                    totalMined: parsedData.totalMined || 0,
-                    sessions: parsedData.sessions || 0,
-                    transactions: parsedData.transactions || {},
-                    level: String(parsedData.level || "1") // Ensure string format
-                };
+                userData = { ...userData, ...data, level: String(data.level || "1") };
+                if (userData.miningState?.isActive && Date.now() < userData.miningState.endTime) resumeMining();
+                else if (userData.miningState?.isActive) completeMining();
+            } else {
+                set(userRef, { profile: { email: currentUser.email, uid: currentUser.uid }, ...userData });
             }
-        } catch (error) {
-            console.error('Error loading guest data:', error);
-            userData = {
-                wallet: { btcBalance: 0, usdValue: 0, totalValue: 0 },
-                totalMined: 0,
-                sessions: 0,
-                transactions: {},
-                level: "1"
-            };
-        }
-        updateDisplay();
+            updateDisplay();
+        });
+        loadTransactions();
     }
 
-    // Save guest data to localStorage
-    function saveGuestData() {
-        try {
-            localStorage.setItem('miningGuestData', JSON.stringify(userData));
-        } catch (error) {
-            console.error('Error saving guest data:', error);
-        }
+    function loadTransactions() {
+        const ref = collection(firestore, 'users', currentUser.uid, 'transactions');
+        onSnapshot(ref, (snapshot) => {
+            const txs = snapshot.docs.map(doc => ({...doc.data(), id: doc.id}))
+                .sort((a, b) => (b.timestamp?.toDate?.() || new Date(b.date)) - (a.timestamp?.toDate?.() || new Date(a.date)))
+                .slice(0, 10);
+            updateTransactionList(txs);
+        });
     }
 
-    // Load transactions from Firestore
-    async function loadTransactions() {
-        if (!currentUser) return;
-
-        try {
-            const q = query(
-                collection(firestore, `users/${currentUser.uid}/transactions`),
-                orderBy('timestamp', 'desc'),
-                limit(10)
-            );
-            const querySnapshot = await getDocs(q);
-            const transactions = {};
-            querySnapshot.forEach((doc) => {
-                transactions[doc.id] = { id: doc.id, ...doc.data() };
-            });
-            userData.transactions = transactions;
-            updateTransactionList();
-        } catch (error) {
-            console.error('Error loading transactions:', error);
-            userData.transactions = {};
-        }
-    }
-
-    // Update display
     function updateDisplay() {
-        // Always recalculate USD values from BTC balance
-        if (userData.wallet.btcBalance > 0) {
-            userData.wallet.usdValue = userData.wallet.btcBalance * btcPrice;
-            userData.wallet.totalValue = userData.wallet.usdValue;
-        }
-        
-        // Update wallet display
-        const balance = userData.wallet.totalValue;
-        document.getElementById('balance').textContent = balance.toFixed(2);
+        const level = LEVELS[userData.level];
+        document.getElementById('balance').textContent = userData.wallet.usdBalance.toFixed(2);
         document.getElementById('totalMined').textContent = userData.totalMined.toFixed(2);
-        document.getElementById('btcBalance').textContent = userData.wallet.btcBalance.toFixed(8);
-        document.getElementById('usdValue').textContent = userData.wallet.usdValue.toFixed(2);
         document.getElementById('sessions').textContent = userData.sessions;
+        document.getElementById('currentLevelText').textContent = `Current Level: ${level.name}`;
+        document.getElementById('currentRate').textContent = userData.level === "1" ? 
+            `${level.minuteRate.toFixed(4)}/min` : `${level.hourlyRate.toFixed(2)}/hour`;
+        document.getElementById('sessionEarned').textContent = (userData.miningState?.totalEarned || 0).toFixed(2);
         
-        if (userData.sessions > 0) {
-            const avgReward = userData.totalMined / userData.sessions;
-            document.getElementById('avgReward').textContent = avgReward.toFixed(2);
-        }
+        ['balanceCard', 'sessionsCard', 'rateCard', 'earnedCard'].forEach(id => 
+            document.getElementById(id).classList.toggle('mining-active', userData.miningState?.isActive));
         
-        // Update level displays
-        updateDisplayLevels();
-        updateTransactionList();
-    }
-
-    // Update level displays
-    function updateDisplayLevels() {
-        const currentLevelText = document.getElementById('currentLevelText');
-        const currentLevelNumber = document.getElementById('currentLevelNumber');
-        const currentLevelName = document.getElementById('currentLevelName');
-        
-        if (currentLevelText) {
-            currentLevelText.textContent = `Current Level: ${LEVEL_NAMES[userData.level] || 'Beginner'}`;
-        }
-        
-        if (currentLevelNumber) {
-            currentLevelNumber.textContent = userData.level;
-        }
-        
-        if (currentLevelName) {
-            currentLevelName.textContent = LEVEL_NAMES[userData.level] || 'Beginner';
+        const progress = document.getElementById('miningProgress');
+        if (userData.miningState?.isActive) {
+            progress.classList.add('active');
+            const pct = Math.min(100, ((Date.now() - userData.miningState.startTime) / (userData.miningState.endTime - userData.miningState.startTime)) * 100);
+            document.getElementById('progressFill').style.width = `${pct}%`;
+            document.getElementById('progressText').textContent = `${pct.toFixed(1)}% complete`;
+        } else {
+            progress.classList.remove('active');
         }
     }
 
-    // Update transaction list
-    function updateTransactionList() {
+    function updateTransactionList(txs = []) {
         const list = document.getElementById('transactionList');
-        
-        // Convert transactions object to array for display
-        const transactionArray = Object.values(userData.transactions || {});
-        
-        if (transactionArray.length === 0) {
-            list.innerHTML = '<div class="empty-state"><p>No mining transactions yet. Start your first mining session!</p></div>';
-            return;
-        }
-
-        // Sort by timestamp/date and take latest 10
-        const sortedTransactions = transactionArray
-            .sort((a, b) => {
-                const dateA = a.timestamp?.toDate?.() || new Date(a.date) || new Date(0);
-                const dateB = b.timestamp?.toDate?.() || new Date(b.date) || new Date(0);
-                return dateB - dateA;
-            })
-            .slice(0, 10);
-
-        list.innerHTML = sortedTransactions.map(tx => `
-            <div class="transaction-item">
+        list.innerHTML = txs.length === 0 ? '<div class="empty-state"><p>No mining transactions yet. Start your first mining session!</p></div>' :
+            txs.map(tx => `<div class="transaction-item">
                 <div class="transaction-info">
-                    <div class="transaction-type">${tx.type === 'mining_cost' ? 'Mining Cost' : 'Mining Reward'}</div>
-                    <div class="transaction-date">${tx.date || (tx.timestamp?.toDate?.() ? new Date(tx.timestamp.toDate()).toLocaleString() : 'Unknown date')}</div>
-                    ${tx.description ? `<div class="transaction-description">${tx.description}</div>` : ''}
+                    <div class="transaction-type">${tx.type === 'cost' ? 'Mining Cost' : 'Mining Reward'}</div>
+                    <div class="transaction-date">${new Date(tx.timestamp?.toDate?.() || tx.date).toLocaleString()}</div>
                 </div>
                 <div class="transaction-amount ${tx.amount < 0 ? 'negative' : 'positive'}">
-                    ${tx.amount >= 0 ? '+' : ''}${tx.btcAmount ? tx.btcAmount.toFixed(8) + ' BTC' : '$' + tx.amount.toFixed(2)}
+                    ${tx.amount >= 0 ? '+' : ''}$${Math.abs(tx.amount).toFixed(2)}
                 </div>
-            </div>
-        `).join('');
+            </div>`).join('');
     }
 
-    // Save user data to Firebase
-    async function saveUserData() {
-        if (currentUser) {
-            try {
-                // Save to Realtime Database
-                const userRef = ref(database, `users/${currentUser.uid}`);
-                await update(userRef, {
-                    wallet: userData.wallet,
-                    totalMined: userData.totalMined,
-                    sessions: userData.sessions,
-                    transactions: userData.transactions,
-                    level: userData.level, // Save level as string
-                    lastUpdated: Date.now()
-                });
-                console.log('Saved user level to Firebase:', userData.level);
-            } catch (error) {
-                console.error('Error saving user data:', error);
-            }
-        } else {
-            // Save guest data locally
-            saveGuestData();
-        }
+    function resetDisplay() {
+        ['balance', 'totalMined', 'sessions', 'currentRate', 'sessionEarned'].forEach(id => 
+            document.getElementById(id).textContent = '0.00');
+        document.getElementById('currentLevelText').textContent = 'Current Level: -';
+        document.getElementById('transactionList').innerHTML = '<div class="empty-state"><p>Please authenticate to view mining data</p></div>';
     }
 
-    // Save transaction to Firestore
-    async function saveTransaction(transactionData) {
-        if (currentUser) {
-            try {
-                const docRef = await addDoc(collection(firestore, `users/${currentUser.uid}/transactions`), {
-                    ...transactionData,
-                    timestamp: serverTimestamp(),
-                    userId: currentUser.uid
-                });
-                
-                // Also save to userData.transactions object
-                userData.transactions[docRef.id] = {
-                    id: docRef.id,
-                    ...transactionData,
-                    timestamp: { toDate: () => new Date() } // Mock timestamp for immediate display
-                };
-            } catch (error) {
-                console.error('Error saving transaction:', error);
-            }
-        } else {
-            // For guest users, save to local transactions object
-            const transactionId = Date.now().toString();
-            userData.transactions[transactionId] = {
-                ...transactionData,
-                date: new Date().toLocaleString(),
-                id: transactionId
-            };
-            saveGuestData();
-        }
-    }
-
-    // Custom confirm dialog with cancel button
-    function showConfirmDialog(message, onConfirm, onCancel) {
-        const result = confirm(message + "\n\nClick OK to continue or Cancel to abort.");
-        if (result) {
-            onConfirm();
-        } else if (onCancel) {
-            onCancel();
-        }
-    }
-
-    // Mining functions
     window.toggleMining = function() {
-        if (isMining) {
-            stopMining();
-        } else {
-            startMining();
-        }
+        (isMining || userData.miningState?.isActive) ? stopMining() : startMining();
     }
 
     function startMining() {
-        const currentLevel = userData.level || "1";
-        const miningCost = MINING_COSTS[currentLevel];
-        const currentBalance = userData.wallet.totalValue;
+        if (!currentUser) return alert('Please authenticate to start mining');
         
-        // Check if user has sufficient funds
-        if (currentBalance < miningCost) {
-            alert(`Insufficient Funds!\n\nRequired: $${miningCost.toLocaleString()}\nYour Balance: $${currentBalance.toFixed(2)}\nShortfall: $${(miningCost - currentBalance).toFixed(2)}\n\nPlease add funds to your wallet to start mining at Level ${currentLevel}.`);
-            return;
+        const level = LEVELS[userData.level];
+        if (userData.wallet.usdBalance < level.cost) {
+            return alert(`Insufficient Funds!\nRequired: $${level.cost}\nBalance: $${userData.wallet.usdBalance.toFixed(2)}`);
         }
         
-        // Show confirmation dialog with cancel button
-        const levelName = LEVEL_NAMES[currentLevel];
-        const expectedReward = MINING_REWARDS[currentLevel];
-        const profit = expectedReward - miningCost;
+        const totalReward = level.dailyRate * level.days;
+        const confirmMsg = `Start ${level.days}-Day Mining?\n\nLevel: ${level.name}\nCost: $${level.cost}\nTotal Reward: $${totalReward}\nProfit: $${totalReward - level.cost}`;
         
-        const confirmMessage = `Start Mining Session?\n\n` +
-                             `Level: ${levelName} (${currentLevel})\n` +
-                             `Cost: $${miningCost.toLocaleString()}\n` +
-                             `Expected Reward: $${expectedReward.toLocaleString()}\n` +
-                             `Expected Profit: $${profit.toLocaleString()}\n` +
-                             `Duration: 24 hours\n\n` +
-                             `Your balance will be deducted immediately.`;
+        if (!confirm(confirmMsg)) return;
         
-        showConfirmDialog(confirmMessage, 
-            // On Confirm
-            function() {
-                // Deduct mining cost from balance
-                const costInBtc = miningCost / btcPrice;
-                userData.wallet.btcBalance -= costInBtc;
-                userData.wallet.usdValue = userData.wallet.btcBalance * btcPrice;
-                userData.wallet.totalValue = userData.wallet.usdValue;
-                
-                // Save the deduction transaction
-                saveTransaction({
-                    type: 'mining_cost',
-                    btcAmount: -costInBtc,
-                    usdAmount: -miningCost,
-                    amount: -miningCost,
-                    level: currentLevel,
-                    btcPrice: btcPrice,
-                    date: new Date().toLocaleString(),
-                    description: `Mining cost for Level ${currentLevel} - ${LEVEL_NAMES[currentLevel]}`
-                });
-                
-                // Update display immediately
-                updateDisplay();
-                saveUserData();
-                
-                isMining = true;
-                timeRemaining = 24 * 60 * 60; // 24 hours in seconds
-                
-                // Update UI
-                document.getElementById('miningBtn').textContent = 'Mining in Progress...';
-                document.getElementById('miningBtn').disabled = true;
-                document.getElementById('miningGif').classList.add('active');
-                document.getElementById('miningPlaceholder').classList.add('mining');
-                document.getElementById('status').textContent = `Mining in Progress... (${levelName})`;
-                document.getElementById('status').className = 'mining-status status-mining';
-                document.getElementById('countdown').style.display = 'block';
-                
-                // Start countdown
-                countdownTimer = setInterval(updateCountdown, 1000);
-                
-                // Set mining completion timer
-                miningTimer = setTimeout(completeMining, timeRemaining * 1000);
-            },
-            // On Cancel
-            function() {
-                console.log('Mining cancelled by user');
-            }
-        );
+        userData.wallet.usdBalance -= level.cost;
+        userData.miningState = {
+            isActive: true,
+            level: userData.level,
+            startTime: Date.now(),
+            endTime: Date.now() + (level.days * 24 * 60 * 60 * 1000),
+            lastPayout: Date.now(),
+            payoutRate: userData.level === "1" ? level.minuteRate : level.hourlyRate,
+            totalEarned: 0,
+            payoutInterval: level.payoutInterval
+        };
+        
+        saveUserData();
+        saveTransaction({ type: 'cost', amount: -level.cost, level: userData.level, date: new Date().toLocaleString() });
+        resumeMining();
+    }
+
+    function resumeMining() {
+        isMining = true;
+        document.getElementById('miningBtn').textContent = 'Stop Mining';
+        document.getElementById('miningGif').style.display = 'block';
+        document.getElementById('miningPlaceholder').style.display = 'none';
+        document.getElementById('status').textContent = `Mining Active - ${LEVELS[userData.miningState.level].name}`;
+        document.getElementById('status').className = 'mining-status status-mining';
+        document.getElementById('countdown').style.display = 'block';
+        
+        countdownTimer = setInterval(updateMiningDisplay, 1000);
+        payoutTimer = setInterval(processPayout, 10000);
     }
 
     function stopMining() {
         isMining = false;
+        clearInterval(payoutTimer);
+        clearInterval(countdownTimer);
+        userData.miningState = null;
+        saveUserData();
         
-        if (miningTimer) clearTimeout(miningTimer);
-        if (countdownTimer) clearInterval(countdownTimer);
-        
-        // Reset UI
         document.getElementById('miningBtn').textContent = 'Start Mining';
-        document.getElementById('miningBtn').disabled = false;
-        document.getElementById('miningGif').classList.remove('active');
-        document.getElementById('miningPlaceholder').classList.remove('mining');
-        document.getElementById('status').textContent = 'Mining Stopped';
-        document.getElementById('status').className = 'mining-status status-idle';
+        document.getElementById('miningGif').style.display = 'none';
+        document.getElementById('miningPlaceholder').style.display = 'block';
+        document.getElementById('status').textContent = 'Ready to Mine';
+        document.getElementById('status').className = 'mining-status';
         document.getElementById('countdown').style.display = 'none';
     }
 
-    function updateCountdown() {
-        if (timeRemaining <= 0) {
-            completeMining();
-            return;
+    async function processPayout() {
+        if (!userData.miningState?.isActive) return;
+        
+        const now = Date.now();
+        if (now >= userData.miningState.endTime) return completeMining();
+        
+        if (now - userData.miningState.lastPayout >= userData.miningState.payoutInterval) {
+            const amount = userData.miningState.payoutRate;
+            userData.wallet.usdBalance += amount;
+            userData.totalMined += amount;
+            userData.miningState.totalEarned += amount;
+            userData.miningState.lastPayout = now;
+            
+            await saveUserData();
+            await saveTransaction({ type: 'reward', amount, level: userData.level, date: new Date().toLocaleString() });
         }
+    }
+
+    function updateMiningDisplay() {
+        if (!userData.miningState?.isActive) return;
         
-        timeRemaining--;
-        const hours = Math.floor(timeRemaining / 3600);
-        const minutes = Math.floor((timeRemaining % 3600) / 60);
-        const seconds = timeRemaining % 60;
+        const timeLeft = Math.max(0, userData.miningState.endTime - Date.now());
+        if (timeLeft <= 0) return completeMining();
         
-        document.getElementById('countdown').textContent = 
-            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        const d = Math.floor(timeLeft / 86400000);
+        const h = Math.floor((timeLeft % 86400000) / 3600000);
+        const m = Math.floor((timeLeft % 3600000) / 60000);
+        const s = Math.floor((timeLeft % 60000) / 1000);
+        
+        document.getElementById('countdown').textContent = d > 0 ? `${d}d ${h}h ${m}m` : h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
+        
+        const nextPayout = userData.miningState.payoutInterval - ((Date.now() - userData.miningState.lastPayout) % userData.miningState.payoutInterval);
+        const nextText = userData.level === "1" ? `${Math.floor(nextPayout / 1000)}s` : `${Math.floor(nextPayout / 60000)}m`;
+        document.getElementById('status').textContent = `Mining Active - Next payout in ${nextText}`;
     }
 
     async function completeMining() {
-        const currentLevel = userData.level || "1";
-        const usdReward = MINING_REWARDS[currentLevel]; // Level-based reward
-        const btcReward = usdReward / btcPrice; // Convert USD to BTC using fixed price
-        
-        // Update wallet data
-        userData.wallet.btcBalance += btcReward;
-        userData.wallet.usdValue = userData.wallet.btcBalance * btcPrice;
-        userData.wallet.totalValue = userData.wallet.usdValue;
-        userData.totalMined += usdReward;
+        userData.miningState = null;
         userData.sessions++;
-        
-        // Save transaction
-        await saveTransaction({
-            type: 'mining_reward',
-            btcAmount: btcReward,
-            usdAmount: usdReward,
-            amount: usdReward,
-            level: currentLevel,
-            btcPrice: btcPrice,
-            date: new Date().toLocaleString(),
-            description: `Mining reward for Level ${currentLevel} - ${LEVEL_NAMES[currentLevel]}`
-        });
-        
-        // Save updated data
         await saveUserData();
-        
-        // Stop mining
         stopMining();
         
-        // Update UI
-        const levelName = LEVEL_NAMES[currentLevel];
-        document.getElementById('status').textContent = `Mining Complete! Earned ${btcReward.toFixed(8)} BTC ($${usdReward.toFixed(2)}) from ${levelName} mining`;
-        document.getElementById('status').className = 'mining-status status-mining';
-        updateDisplay();
-        
-        // Reload transactions if authenticated
-        if (currentUser) {
-            await loadTransactions();
-        } else {
-            updateTransactionList();
-        }
-        
-        // Show completion animation
-        document.getElementById('miningGif').style.animation = 'pulse 0.5s ease-in-out 3';
-        
-        setTimeout(() => {
-            document.getElementById('status').textContent = 'Ready to Mine';
-            document.getElementById('status').className = 'mining-status status-idle';
-            document.getElementById('miningGif').style.animation = '';
-        }, 5000);
+        document.getElementById('status').textContent = 'Mining Complete!';
+        setTimeout(() => document.getElementById('status').textContent = 'Ready to Mine', 3000);
     }
 
-    // Initialize display when page loads
-    setTimeout(() => {
-        updateDisplay();
-    }, 1000);
+    async function saveUserData() {
+        if (!currentUser) return;
+        try {
+            await update(ref(database, `users/${currentUser.uid}`), { ...userData, lastUpdated: Date.now() });
+        } catch (e) { console.error('Save error:', e); }
+    }
 
-    // Export functions for debugging if needed
-    window.userData = userData;
-    window.saveUserData = saveUserData;
-    window.updateDisplay = updateDisplay;
+    async function saveTransaction(data) {
+        if (!currentUser) return;
+        try {
+            await addDoc(collection(firestore, 'users', currentUser.uid, 'transactions'), 
+                { ...data, timestamp: serverTimestamp(), userId: currentUser.uid });
+        } catch (e) { console.error('Transaction error:', e); }
+    }
+
+    setTimeout(updateDisplay, 1000);
 </script>
 </body>
-<html>
+</html>
