@@ -624,320 +624,318 @@
 
     <script type="module">
         // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getDatabase, ref, get, update, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-        import firebaseConfig from './firebaseConfig.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { getDatabase, ref, get, update, onValue, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import firebaseConfig from './firebaseConfig.js';
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
 
-        let currentUser = null;
-        let userBalance = 0;
+let currentUser = null;
+let userBalance = 0;
 
-        // DOM elements
-        const authStatus = document.getElementById('authStatus');
-        const balanceAmount = document.getElementById('balanceAmount');
-        const withdrawForm = document.getElementById('withdrawForm');
-        const withdrawAmount = document.getElementById('withdrawAmount');
-        const btcAddress = document.getElementById('btcAddress');
-        const withdrawBtn = document.getElementById('withdrawBtn');
-        const alertContainer = document.getElementById('alertContainer');
-        const transactionList = document.getElementById('transactionList');
-        
-        // Modal elements
-        const confirmationModal = document.getElementById('confirmationModal');
-        const confirmAmount = document.getElementById('confirmAmount');
-        const confirmBtcAddress = document.getElementById('confirmBtcAddress');
-        const confirmCurrentBalance = document.getElementById('confirmCurrentBalance');
-        const confirmRemainingBalance = document.getElementById('confirmRemainingBalance');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const confirmBtn = document.getElementById('confirmBtn');
-        const insufficientBalanceMsg = document.getElementById('insufficientBalanceMsg');
+// DOM elements
+const authStatus = document.getElementById('authStatus');
+const balanceAmount = document.getElementById('balanceAmount');
+const withdrawForm = document.getElementById('withdrawForm');
+const withdrawAmount = document.getElementById('withdrawAmount');
+const btcAddress = document.getElementById('btcAddress');
+const withdrawBtn = document.getElementById('withdrawBtn');
+const alertContainer = document.getElementById('alertContainer');
+const transactionList = document.getElementById('transactionList');
 
-        // Format currency
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 2
-            }).format(amount);
+// Modal elements
+const confirmationModal = document.getElementById('confirmationModal');
+const confirmAmount = document.getElementById('confirmAmount');
+const confirmBtcAddress = document.getElementById('confirmBtcAddress');
+const confirmCurrentBalance = document.getElementById('confirmCurrentBalance');
+const confirmRemainingBalance = document.getElementById('confirmRemainingBalance');
+const cancelBtn = document.getElementById('cancelBtn');
+const confirmBtn = document.getElementById('confirmBtn');
+const insufficientBalanceMsg = document.getElementById('insufficientBalanceMsg');
+
+// Format currency
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2
+    }).format(amount);
+}
+
+// Update withdraw button state based on balance
+function updateWithdrawButtonState() {
+    if (userBalance < 1000) {
+        withdrawBtn.disabled = true;
+        withdrawBtn.classList.remove('btn');
+        withdrawBtn.classList.add('btn-insufficient');
+        withdrawBtn.textContent = 'Insufficient Balance';
+        insufficientBalanceMsg.style.display = 'block';
+    } else {
+        withdrawBtn.disabled = false;
+        withdrawBtn.classList.remove('btn-insufficient');
+        withdrawBtn.classList.add('btn');
+        withdrawBtn.textContent = 'Process Withdrawal';
+        insufficientBalanceMsg.style.display = 'none';
+    }
+}
+
+// Show alert with auto-dismiss
+function showAlert(message, type = 'error') {
+    alertContainer.innerHTML = `
+        <div class="alert alert-${type}" style="padding: 12px; margin: 16px 0; border-radius: 8px; background: ${type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${type === 'success' ? '#22c55e' : '#ef4444'}; border: 1px solid ${type === 'success' ? '#22c55e' : '#ef4444'};">
+            ${message}
+        </div>
+    `;
+    setTimeout(() => alertContainer.innerHTML = '', 5000);
+}
+
+// Load user balance
+function loadUserBalance(uid) {
+    const userRef = ref(database, `users/${uid}`);
+    onValue(userRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            const legacyBalance = data.wallet?.btcBalance || data.wallet?.usdValue || data.wallet?.totalValue || 0;
+            userBalance = data.wallet?.usdBalance || legacyBalance || 0;
+            balanceAmount.textContent = formatCurrency(userBalance);
+            updateWithdrawButtonState();
+        } else {
+            userBalance = 0;
+            balanceAmount.textContent = formatCurrency(0);
+            updateWithdrawButtonState();
+        }
+    });
+}
+
+// Load user transactions with enhanced pending display
+function loadUserTransactions(uid) {
+    const transactionsRef = ref(database, `users/${uid}/transactions`);
+    onValue(transactionsRef, (snapshot) => {
+        const transactions = snapshot.val();
+        if (!transactions) {
+            transactionList.innerHTML = '<div class="empty-state">No transactions found</div>';
+            return;
         }
 
-        // Update withdraw button state based on balance
-        function updateWithdrawButtonState() {
-            if (userBalance < 1000) {
-                withdrawBtn.disabled = true;
-                withdrawBtn.classList.remove('btn');
-                withdrawBtn.classList.add('btn-insufficient');
-                withdrawBtn.textContent = 'Insufficient Balance';
-                insufficientBalanceMsg.style.display = 'block';
-            } else {
-                withdrawBtn.disabled = false;
-                withdrawBtn.classList.remove('btn-insufficient');
-                withdrawBtn.classList.add('btn');
-                withdrawBtn.textContent = 'Process Withdrawal';
-                insufficientBalanceMsg.style.display = 'none';
+        const transactionArray = Object.entries(transactions)
+            .map(([key, transaction]) => ({ id: key, ...transaction }))
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 10);
+
+        if (transactionArray.length === 0) {
+            transactionList.innerHTML = '<div class="empty-state">No transactions found</div>';
+            return;
+        }
+
+        transactionList.innerHTML = transactionArray.map(tx => {
+            const date = new Date(tx.timestamp).toLocaleDateString();
+            const time = new Date(tx.timestamp).toLocaleTimeString();
+            const isWithdrawal = tx.type === 'withdrawal';
+            
+            // Enhanced status display for pending withdrawals
+            let statusText = tx.status;
+            let statusStyle = '';
+            
+            if (tx.status === 'pending' && isWithdrawal) {
+                statusText = 'Pending - Processing in 24hrs';
+                statusStyle = 'background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;';
+            } else if (tx.status === 'approved') {
+                statusStyle = 'background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;';
+            } else if (tx.status === 'rejected') {
+                statusStyle = 'background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;';
             }
-        }
-
-        // Show alert
-        function showAlert(message, type = 'error') {
-            alertContainer.innerHTML = `
-                <div class="alert alert-${type}">
-                    ${message}
+            
+            return `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-type">${tx.type.charAt(0).toUpperCase() + tx.type.slice(1)}</div>
+                        <div class="transaction-date">${date} at ${time}</div>
+                        ${tx.btcAddress ? `<div style="font-size: 0.8rem; color: #666; margin-top: 0.25rem;">BTC: ${tx.btcAddress.substring(0, 10)}...${tx.btcAddress.substring(tx.btcAddress.length - 6)}</div>` : ''}
+                        <div class="transaction-status" style="${statusStyle}">${statusText}</div>
+                    </div>
+                    <div class="transaction-amount ${isWithdrawal ? 'negative' : 'positive'}">
+                        ${isWithdrawal ? '-' : '+'}${formatCurrency(tx.amount)}
+                    </div>
                 </div>
             `;
-            setTimeout(() => {
-                alertContainer.innerHTML = '';
-            }, 5000);
-        }
+        }).join('');
+    });
+}
 
-        // Load user balance
-        function loadUserBalance(uid) {
-            const userRef = ref(database, `users/${uid}`);
-            onValue(userRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    // Handle legacy data conversion
-                    const legacyBalance = data.wallet?.btcBalance || data.wallet?.usdValue || data.wallet?.totalValue || 0;
-                    userBalance = data.wallet?.usdBalance || legacyBalance || 0;
-                    balanceAmount.textContent = formatCurrency(userBalance);
-                    updateWithdrawButtonState(); // Update button state when balance changes
-                } else {
-                    userBalance = 0;
-                    balanceAmount.textContent = formatCurrency(0);
-                    updateWithdrawButtonState(); // Update button state when balance changes
-                }
-            });
-        }
+// Show confirmation modal
+function showConfirmationModal(amount, address) {
+    const numAmount = parseFloat(amount);
+    const remainingBalance = userBalance - numAmount;
+    
+    confirmAmount.textContent = formatCurrency(numAmount);
+    confirmBtcAddress.textContent = address;
+    confirmCurrentBalance.textContent = formatCurrency(userBalance);
+    confirmRemainingBalance.textContent = formatCurrency(remainingBalance);
+    
+    confirmationModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
 
-        // Load user transactions
-        function loadUserTransactions(uid) {
-            const transactionsRef = ref(database, `users/${uid}/transactions`);
-            onValue(transactionsRef, (snapshot) => {
-                const transactions = snapshot.val();
-                if (!transactions) {
-                    transactionList.innerHTML = '<div class="empty-state">No transactions found</div>';
-                    return;
-                }
+// Hide confirmation modal
+function hideConfirmationModal() {
+    confirmationModal.classList.remove('active');
+    document.body.style.overflow = '';
+}
 
-                const transactionArray = Object.entries(transactions)
-                    .map(([key, transaction]) => ({ id: key, ...transaction }))
-                    .sort((a, b) => b.timestamp - a.timestamp)
-                    .slice(0, 10); // Show last 10 transactions
+// Validate withdrawal
+function validateWithdrawal(amount, address) {
+    const numAmount = parseFloat(amount);
+    
+    if (isNaN(numAmount) || numAmount <= 0) return 'Please enter a valid amount';
+    if (numAmount < 1000) return 'Minimum withdrawal amount is $1,000';
+    if (numAmount > 50000) return 'Maximum withdrawal amount is $50,000';
+    if (numAmount > userBalance) return 'Insufficient balance';
+    if (!address || !address.trim()) return 'Please enter your BTC wallet address';
+    
+    const btcAddressRegex = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$|^bc1[a-z0-9]{39,59}$/;
+    if (!btcAddressRegex.test(address.trim())) return 'Please enter a valid BTC wallet address';
+    
+    return null;
+}
 
-                if (transactionArray.length === 0) {
-                    transactionList.innerHTML = '<div class="empty-state">No transactions found</div>';
-                    return;
-                }
+// Enhanced withdrawal processing with pending status
+async function processWithdrawal(amount, address) {
+    if (!currentUser) {
+        showAlert('Please sign in to continue');
+        return;
+    }
 
-                transactionList.innerHTML = transactionArray.map(transaction => {
-                    const date = new Date(transaction.timestamp).toLocaleDateString();
-                    const time = new Date(transaction.timestamp).toLocaleTimeString();
-                    const isWithdrawal = transaction.type === 'withdrawal';
-                    
-                    return `
-                        <div class="transaction-item">
-                            <div class="transaction-info">
-                                <div class="transaction-type">${transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}</div>
-                                <div class="transaction-date">${date} at ${time}</div>
-                                ${transaction.btcAddress ? `<div style="font-size: 0.8rem; color: #666; margin-top: 0.25rem;">BTC: ${transaction.btcAddress.substring(0, 10)}...${transaction.btcAddress.substring(transaction.btcAddress.length - 6)}</div>` : ''}
-                                <div class="transaction-status status-${transaction.status}">${transaction.status}</div>
-                            </div>
-                            <div class="transaction-amount ${isWithdrawal ? 'negative' : 'positive'}">
-                                ${isWithdrawal ? '-' : '+'}${formatCurrency(transaction.amount)}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            });
-        }
+    confirmBtn.disabled = true;
+    confirmBtn.classList.add('btn-loading');
+    confirmBtn.textContent = 'Processing...';
 
-        // Show confirmation modal
-        function showConfirmationModal(amount, address) {
-            const numAmount = parseFloat(amount);
-            const remainingBalance = userBalance - numAmount;
-            
-            confirmAmount.textContent = formatCurrency(numAmount);
-            confirmBtcAddress.textContent = address;
-            confirmCurrentBalance.textContent = formatCurrency(userBalance);
-            confirmRemainingBalance.textContent = formatCurrency(remainingBalance);
-            
-            confirmationModal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
-        }
-
-        // Hide confirmation modal
-        function hideConfirmationModal() {
-            confirmationModal.classList.remove('active');
-            document.body.style.overflow = ''; // Restore scrolling
-        }
-
-        // Validate withdrawal amount and BTC address
-        function validateWithdrawal(amount, address) {
-            const numAmount = parseFloat(amount);
-            
-            // Validate amount
-            if (isNaN(numAmount) || numAmount <= 0) {
-                return 'Please enter a valid amount';
-            }
-            
-            if (numAmount < 1000) {
-                return 'Minimum withdrawal amount is $1,000';
-            }
-            
-            if (numAmount > 50000) {
-                return 'Maximum withdrawal amount is $50,000';
-            }
-            
-            if (numAmount > userBalance) {
-                return 'Insufficient balance';
-            }
-
-            // Validate BTC address
-            if (!address || address.trim().length === 0) {
-                return 'Please enter your BTC wallet address';
-            }
-
-            // Basic BTC address validation (simplified)
-            const btcAddressRegex = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$|^bc1[a-z0-9]{39,59}$/;
-            if (!btcAddressRegex.test(address.trim())) {
-                return 'Please enter a valid BTC wallet address';
-            }
-            
-            return null;
-        }
-
-        // Process withdrawal (updated to work with modal)
-        async function processWithdrawal(amount, address) {
-            if (!currentUser) {
-                showAlert('Please sign in to continue');
-                return;
-            }
-
-            confirmBtn.disabled = true;
-            confirmBtn.classList.add('btn-loading');
-            confirmBtn.textContent = '';
-
-            try {
-                const numAmount = parseFloat(amount);
-                const newBalance = userBalance - numAmount;
-                const timestamp = Date.now();
-                
-                // Create transaction record
-                const transactionId = `withdrawal_${timestamp}`;
-                const updates = {};
-                
-                // Update user balance and add transaction
-                updates[`users/${currentUser.uid}/wallet/usdBalance`] = newBalance;
-                
-                // Add transaction record under user's transactions with BTC address
-                updates[`users/${currentUser.uid}/transactions/${transactionId}`] = {
-                    type: 'withdrawal',
-                    amount: numAmount,
-                    btcAddress: address.trim(),
-                    status: 'pending',
-                    timestamp: timestamp,
-                    description: 'Withdrawal request to BTC address'
-                };
-
-                await update(ref(database), updates);
-
-                hideConfirmationModal();
-                showAlert(`Withdrawal of ${formatCurrency(numAmount)} to BTC address submitted successfully! Status: Pending`, 'success');
-                withdrawAmount.value = '';
-                btcAddress.value = '';
-
-            } catch (error) {
-                console.error('Withdrawal error:', error);
-                showAlert('Failed to process withdrawal. Please try again.');
-            } finally {
-                confirmBtn.disabled = false;
-                confirmBtn.classList.remove('btn-loading');
-                confirmBtn.textContent = 'Confirm Withdrawal';
-            }
-        }
-
-        // Handle form submission (updated to show modal)
-        withdrawForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            // Prevent form submission if insufficient balance
-            if (userBalance < 1000) {
-                showAlert('Minimum balance of $1,000 required to withdraw');
-                return;
-            }
-
-            const amount = withdrawAmount.value.trim();
-            const address = btcAddress.value.trim();
-            
-            if (amount && address) {
-                const validationError = validateWithdrawal(amount, address);
-                if (validationError) {
-                    showAlert(validationError);
-                    return;
-                }
-                showConfirmationModal(amount, address);
-            }
-        });
-
-        // Modal event listeners
-        cancelBtn.addEventListener('click', hideConfirmationModal);
+    try {
+        const numAmount = parseFloat(amount);
+        const timestamp = new Date().toISOString();
+        const withdrawalId = `withdrawal_${Date.now()}`;
         
-        confirmBtn.addEventListener('click', () => {
-            const amount = withdrawAmount.value.trim();
-            const address = btcAddress.value.trim();
-            if (amount && address) {
-                processWithdrawal(amount, address);
-            }
-        });
+        // Create withdrawal request in pending requests collection
+        const pendingWithdrawalData = {
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            userName: currentUser.displayName || 'Unknown User',
+            amount: numAmount,
+            btcAddress: address.trim(),
+            status: 'pending',
+            requestDate: timestamp,
+            processedDate: null,
+            processedBy: null
+        };
 
-        // Close modal when clicking outside
-        confirmationModal.addEventListener('click', (e) => {
-            if (e.target === confirmationModal) {
-                hideConfirmationModal();
-            }
-        });
+        // Create user transaction record
+        const userTransactionData = {
+            type: 'withdrawal',
+            amount: numAmount,
+            btcAddress: address.trim(),
+            status: 'pending',
+            timestamp: timestamp,
+            withdrawalId: withdrawalId,
+            description: 'Withdrawal request submitted - Processing in 24hrs'
+        };
 
-        // Close modal with Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && confirmationModal.classList.contains('active')) {
-                hideConfirmationModal();
-            }
-        });
+        const updates = {};
+        
+        // Add to pending withdrawals collection for admin
+        updates[`pendingWithdrawals/${withdrawalId}`] = pendingWithdrawalData;
+        
+        // Add to user's transaction history
+        updates[`users/${currentUser.uid}/transactions/${withdrawalId}`] = userTransactionData;
 
-        // Clear alerts when user starts typing
-        withdrawAmount.addEventListener('input', () => {
-            alertContainer.innerHTML = '';
-        });
+        await update(ref(database), updates);
 
-        btcAddress.addEventListener('input', () => {
-            alertContainer.innerHTML = '';
-        });
+        hideConfirmationModal();
+        showAlert(
+            `Withdrawal request of ${formatCurrency(numAmount)} submitted successfully! Your withdrawal is pending and will be processed within 24 hours. You'll receive confirmation once approved.`, 
+            'success'
+        );
+        
+        withdrawAmount.value = '';
+        btcAddress.value = '';
 
-        // Auth state listener
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                authStatus.textContent = 'Authenticated';
-                authStatus.className = 'auth-status auth-authenticated';
-                
-                // Load user data
-                loadUserBalance(user.uid);
-                loadUserTransactions(user.uid);
-            } else {
-                currentUser = null;
-                authStatus.textContent = 'Please Sign In';
-                authStatus.className = 'auth-status auth-guest';
-                balanceAmount.textContent = '$0.00';
-                userBalance = 0;
-                updateWithdrawButtonState(); // Update button state when signed out
-                transactionList.innerHTML = '<div class="empty-state">Please sign in to view transactions</div>';
-            }
-        });
+    } catch (error) {
+        console.error('Withdrawal error:', error);
+        showAlert('Failed to submit withdrawal request. Please try again.');
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.classList.remove('btn-loading');
+        confirmBtn.textContent = 'Confirm Withdrawal';
+    }
+}
+
+// Handle form submission
+withdrawForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    if (userBalance < 1000) {
+        showAlert('Minimum balance of $1,000 required to withdraw');
+        return;
+    }
+
+    const amount = withdrawAmount.value.trim();
+    const address = btcAddress.value.trim();
+    
+    if (amount && address) {
+        const validationError = validateWithdrawal(amount, address);
+        if (validationError) {
+            showAlert(validationError);
+            return;
+        }
+        showConfirmationModal(amount, address);
+    }
+});
+
+// Modal event listeners
+cancelBtn.addEventListener('click', hideConfirmationModal);
+confirmBtn.addEventListener('click', () => {
+    const amount = withdrawAmount.value.trim();
+    const address = btcAddress.value.trim();
+    if (amount && address) {
+        processWithdrawal(amount, address);
+    }
+});
+
+// Close modal on outside click or Escape key
+confirmationModal.addEventListener('click', (e) => {
+    if (e.target === confirmationModal) hideConfirmationModal();
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && confirmationModal.classList.contains('active')) {
+        hideConfirmationModal();
+    }
+});
+
+// Clear alerts when typing
+withdrawAmount.addEventListener('input', () => alertContainer.innerHTML = '');
+btcAddress.addEventListener('input', () => alertContainer.innerHTML = '');
+
+// Auth state listener
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        authStatus.textContent = 'Authenticated';
+        authStatus.className = 'auth-status auth-authenticated';
+        loadUserBalance(user.uid);
+        loadUserTransactions(user.uid);
+    } else {
+        currentUser = null;
+        authStatus.textContent = 'Please Sign In';
+        authStatus.className = 'auth-status auth-guest';
+        balanceAmount.textContent = '$0.00';
+        userBalance = 0;
+        updateWithdrawButtonState();
+        transactionList.innerHTML = '<div class="empty-state">Please sign in to view transactions</div>';
+    }
+});
     </script>
 </body>
 </html>
