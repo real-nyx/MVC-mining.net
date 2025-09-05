@@ -338,7 +338,7 @@
                 <div class="stat-value" id="sessions">0</div>
             </div>
             <div class="stat-card" id="rateCard">
-                <div class="stat-title">Income Per 4H</div>
+                <div class="stat-title">Daily Income</div>
                 <div class="stat-value">$<span id="currentRate">0.00</span></div>
             </div>
             <div class="stat-card" id="earnedCard">
@@ -447,20 +447,22 @@
         onValue(userRef, (snapshot) => {
             if (snapshot.exists()) {
                 userData = { ...userData, ...snapshot.val() };
-                // Ensure user has a level assigned
-                if (!userData.level) {
-                    alert('No mining level assigned to your account. Please contact support.');
-                    return;
-                }
                 if (userData.miningState?.isActive && Date.now() < userData.miningState.endTime) {
                     resumeMining();
                 } else if (userData.miningState?.isActive) {
                     completeMining();
                 }
             } else {
-                // New user - don't set default level, require admin assignment
-                alert('Account not found. Please contact support to activate your mining level.');
-                return;
+                // New user - create basic profile without level
+                const newUserData = {
+                    profile: { email: currentUser.email, uid: currentUser.uid },
+                    wallet: { usdBalance: 0 },
+                    totalMined: 0,
+                    sessions: 0,
+                    level: null
+                };
+                set(userRef, newUserData);
+                userData = { ...userData, ...newUserData };
             }
             updateDisplay();
         });
@@ -483,11 +485,11 @@
             document.getElementById('balance').textContent = userData.wallet?.usdBalance?.toFixed(2) || '0.00';
             document.getElementById('totalMined').textContent = userData.totalMined?.toFixed(2) || '0.00';
             document.getElementById('sessions').textContent = userData.sessions || '0';
-            document.getElementById('currentLevelText').textContent = 'No Level Assigned - Contact Support';
+            document.getElementById('currentLevelText').textContent = 'Upgrade Plan Required';
             document.getElementById('currentRate').textContent = '0.00';
             document.getElementById('sessionEarned').textContent = '0.00';
-            document.getElementById('miningBtn').disabled = true;
-            document.getElementById('miningBtn').textContent = 'Level Required';
+            document.getElementById('miningBtn').disabled = false;
+            document.getElementById('miningBtn').textContent = 'Upgrade Plan';
             return;
         }
 
@@ -551,6 +553,13 @@
     }
 
     window.toggleMining = function() {
+        // If no level assigned, show upgrade message
+        if (!userData.level || !LEVELS[userData.level]) {
+            document.getElementById('status').textContent = 'Please upgrade your plan to start mining';
+            document.getElementById('status').className = 'mining-status';
+            return;
+        }
+        
         if (isMining || userData.miningState?.isActive) {
             stopMining();
         } else {
@@ -559,21 +568,29 @@
     }
 
     function startMining() {
-        if (!currentUser) return alert('Please authenticate to start mining');
+        if (!currentUser) {
+            document.getElementById('status').textContent = 'Please authenticate to start mining';
+            return;
+        }
         
         if (!userData.level) {
-            return alert('No mining level assigned to your account. Please contact support.');
+            document.getElementById('status').textContent = 'Please upgrade your plan to start mining';
+            return;
         }
         
         const level = LEVELS[userData.level];
-        if (!level) return alert('Invalid level configuration. Please contact support.');
-        
-        if (userData.wallet.usdBalance < level.cost) {
-            return alert(`Insufficient Funds!\nRequired: $${level.cost}\nBalance: $${userData.wallet.usdBalance.toFixed(2)}`);
+        if (!level) {
+            document.getElementById('status').textContent = 'Invalid level configuration';
+            return;
         }
         
-        const totalIncome = level.income * 300; // 50 days * 6 payouts per day (every 4 hours)
-        const confirmMsg = `Start 50-Day Mining?\n\nLevel: ${userData.level}\nCost: $${level.cost}\nTotal Income: $${totalIncome}\nIncome per 4 hours: $${level.income}\nProfit: $${totalIncome - level.cost}`;
+        if (userData.wallet.usdBalance < level.cost) {
+            document.getElementById('status').textContent = `Insufficient funds - Need $${level.cost}`;
+            return;
+        }
+        
+        const totalIncome = level.income * 50; // 50 days * 1 payout per day
+        const confirmMsg = `Start 50-Day Mining Plan?\n\nLevel: ${userData.level}\nCost: $${level.cost}\nDaily Income: $${level.income}\nTotal Income: $${totalIncome}\nMining: 4 hours per day for 50 days\nProfit: $${totalIncome - level.cost}`;
         
         if (!confirm(confirmMsg)) return;
         
@@ -586,10 +603,13 @@
             isActive: true,
             level: userData.level,
             startTime: now,
-            endTime: now + (50 * 24 * 60 * 60 * 1000), // 50 days
-            lastPayout: now,
+            endTime: now + (50 * 24 * 60 * 60 * 1000), // 50 days total
+            lastPayout: 0, // Track last daily payout
             pendingEarned: 0,
-            income: level.income
+            income: level.income,
+            dailyMiningStart: 0, // Track when daily 4-hour session started
+            dailyMiningActive: false, // Whether currently in 4-hour session
+            daysCompleted: 0
         };
         
         saveUserData();
@@ -606,7 +626,7 @@
         document.getElementById('countdown').style.display = 'block';
         
         countdownTimer = setInterval(updateMiningDisplay, 1000);
-        payoutTimer = setInterval(processPayout, 60000); // Check every minute
+        payoutTimer = setInterval(processPayout, 30000); // Check every 30 seconds
     }
 
     function stopMining() {
@@ -624,7 +644,6 @@
         if (!userData.miningState?.isActive) return;
         
         const now = Date.now();
-        const fourHours = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
         
         // Check if mining period is complete
         if (now >= userData.miningState.endTime) {
@@ -632,10 +651,37 @@
             return;
         }
         
-        // Check if 4 hours have passed since last payout
-        if (now - userData.miningState.lastPayout >= fourHours) {
+        // Calculate days since start
+        const daysSinceStart = Math.floor((now - userData.miningState.startTime) / (24 * 60 * 60 * 1000));
+        const currentDay = daysSinceStart + 1;
+        
+        // Check if we've completed all 50 days
+        if (currentDay > 50) {
+            completeMining();
+            return;
+        }
+        
+        // Get start of current day
+        const dayStart = userData.miningState.startTime + (daysSinceStart * 24 * 60 * 60 * 1000);
+        
+        // Check if daily mining session should start (if not already active)
+        if (!userData.miningState.dailyMiningActive) {
+            // Start daily 4-hour mining session
+            userData.miningState.dailyMiningActive = true;
+            userData.miningState.dailyMiningStart = now;
+            saveUserData();
+        }
+        
+        // Check if daily 4-hour session is complete
+        const fourHours = 4 * 60 * 60 * 1000;
+        const miningSessionElapsed = now - userData.miningState.dailyMiningStart;
+        
+        if (miningSessionElapsed >= fourHours && userData.miningState.dailyMiningActive) {
+            // Complete daily mining session
+            userData.miningState.dailyMiningActive = false;
             userData.miningState.pendingEarned += userData.miningState.income;
             userData.miningState.lastPayout = now;
+            userData.miningState.daysCompleted = currentDay;
             saveUserData();
             updateDisplay();
         }
@@ -644,7 +690,13 @@
     function updateMiningDisplay() {
         if (!userData.miningState?.isActive) return;
         
-        const timeLeft = Math.max(0, userData.miningState.endTime - Date.now());
+        const now = Date.now();
+        const daysSinceStart = Math.floor((now - userData.miningState.startTime) / (24 * 60 * 60 * 1000));
+        const currentDay = Math.min(50, daysSinceStart + 1);
+        const daysLeft = 50 - currentDay;
+        
+        // Overall countdown
+        const timeLeft = Math.max(0, userData.miningState.endTime - now);
         if (timeLeft <= 0) {
             completeMining();
             return;
@@ -654,13 +706,31 @@
         const hours = Math.floor((timeLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
         const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
         
-        document.getElementById('countdown').textContent = `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m`;
+        document.getElementById('countdown').textContent = `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m left`;
         
-        // Show next payout countdown
-        const nextPayout = (4 * 60 * 60 * 1000) - ((Date.now() - userData.miningState.lastPayout) % (4 * 60 * 60 * 1000));
-        const nextHours = Math.floor(nextPayout / (60 * 60 * 1000));
-        const nextMinutes = Math.floor((nextPayout % (60 * 60 * 1000)) / (60 * 1000));
-        document.getElementById('status').textContent = `Mining Active - Next payout in ${nextHours}h ${nextMinutes}m`;
+        // Daily mining session status
+        if (userData.miningState.dailyMiningActive) {
+            const sessionElapsed = now - userData.miningState.dailyMiningStart;
+            const fourHours = 4 * 60 * 60 * 1000;
+            const sessionTimeLeft = Math.max(0, fourHours - sessionElapsed);
+            
+            const sessionHours = Math.floor(sessionTimeLeft / (60 * 60 * 1000));
+            const sessionMinutes = Math.floor((sessionTimeLeft % (60 * 60 * 1000)) / (60 * 1000));
+            const sessionSeconds = Math.floor((sessionTimeLeft % (60 * 1000)) / 1000);
+            
+            document.getElementById('status').textContent = `Day ${currentDay}/50 - Mining: ${sessionHours}h ${sessionMinutes}m ${sessionSeconds}s left`;
+        } else {
+            // Check if we can start next day's mining
+            const nextDayStart = userData.miningState.startTime + (currentDay * 24 * 60 * 60 * 1000);
+            if (now >= nextDayStart && currentDay <= 50) {
+                document.getElementById('status').textContent = `Day ${currentDay}/50 - Ready to start daily mining`;
+            } else {
+                const timeToNext = nextDayStart - now;
+                const nextHours = Math.floor(timeToNext / (60 * 60 * 1000));
+                const nextMinutes = Math.floor((timeToNext % (60 * 60 * 1000)) / (60 * 1000));
+                document.getElementById('status').textContent = `Day ${currentDay-1}/50 completed - Next in ${nextHours}h ${nextMinutes}m`;
+            }
+        }
     }
 
     function completeMining() {
