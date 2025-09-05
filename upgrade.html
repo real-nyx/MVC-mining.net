@@ -662,11 +662,12 @@
 
             <div class="pending-payment" id="pendingPayment">
                 <div class="pending-header">
-                    Level Upgraded Successfully!
+                    Payment Submitted Successfully!
                 </div>
                 <div class="pending-message">
-                    <span>Your level has been updated successfully!</span>
-                    <span><strong>Status:</strong> Active - Ready to mine!</span>
+                    <span>Your payment has been submitted for review</span>
+                    <span><strong>Processing time:</strong> Your level will be updated within 24 hours</span>
+                    <span><strong>Status:</strong> Pending admin approval</span>
                 </div>
             </div>
         </div>
@@ -710,6 +711,7 @@
 
         const loadingScreen = document.getElementById('loadingScreen');
         const mainApp = document.getElementById('mainApp');
+        const authRequired = document.getElementById('authRequired');
         const userName = document.getElementById('userName');
         const userBalance = document.getElementById('userBalance');
         const currentLevelBadge = document.getElementById('currentLevelBadge');
@@ -732,7 +734,7 @@
                 loadLevels();
                 loadUserData();
             } else {
-                window.location.href = '/login.html';
+                showAuthRequired();
             }
         });
 
@@ -758,42 +760,77 @@
         function renderLevels() {
             if (!LEVELS || Object.keys(LEVELS).length === 0) return;
 
-            const levelsHtml = Object.entries(LEVELS).map(([levelNum, levelData]) => {
-                const isCurrentLevel = userData?.level == levelNum;
-                const isLowerLevel = userData?.level && parseInt(levelNum) < parseInt(userData.level);
-                
-                return `
-                    <div class="card ${isCurrentLevel ? 'current-level' : ''}" data-level="${levelNum}">
-                        <img src="bitcoin.jpg" alt="Bitcoin">
-                        <h2>Level ${levelNum}</h2>
+            const currentUserLevel = userData?.level ? parseInt(userData.level) : 0;
+
+            const levelsHtml = Object.entries(LEVELS)
+                .filter(([levelNum]) => parseInt(levelNum) > currentUserLevel) // Only show higher levels
+                .map(([levelNum, levelData]) => {
+                    return `
+                        <div class="card" data-level="${levelNum}">
+                            <img src="bitcoin.jpg" alt="Bitcoin" onerror="this.style.display='none'">
+                            <h2>Level ${levelNum}</h2>
+                            <div class="info">
+                                <span>Daily Output:</span>
+                                <span>$${levelData.income}</span>
+                            </div>
+                            <div class="info">
+                                <span>50-Day Total:</span>
+                                <span>$${levelData.income * 50}</span>
+                            </div>
+                            <div class="info">
+                                <span>Price:</span>
+                                <span class="price">$${levelData.cost.toLocaleString()}</span>
+                            </div>
+                            <div class="info">
+                                <span>Profit:</span>
+                                <span class="price">$${((levelData.income * 50) - levelData.cost).toLocaleString()}</span>
+                            </div>
+                            <button 
+                                class="buy-btn" 
+                                onclick="openTransaction('Level ${levelNum}', ${levelData.cost}, ${levelData.income}, ${levelNum})"
+                            >
+                                Upgrade to Level ${levelNum}
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+
+            // Show current level card if user has a level
+            let currentLevelHtml = '';
+            if (userData?.level && LEVELS[userData.level]) {
+                const currentLevel = LEVELS[userData.level];
+                currentLevelHtml = `
+                    <div class="card current-level">
+                        <img src="bitcoin.jpg" alt="Bitcoin" onerror="this.style.display='none'">
+                        <h2>Level ${userData.level}</h2>
                         <div class="info">
                             <span>Daily Output:</span>
-                            <span>$${levelData.income}</span>
+                            <span>$${currentLevel.income}</span>
                         </div>
                         <div class="info">
                             <span>50-Day Total:</span>
-                            <span>$${levelData.income * 50}</span>
+                            <span>$${currentLevel.income * 50}</span>
                         </div>
                         <div class="info">
                             <span>Price:</span>
-                            <span class="price">$${levelData.cost.toLocaleString()}</span>
+                            <span class="price">$${currentLevel.cost.toLocaleString()}</span>
                         </div>
                         <div class="info">
-                            <span>Profit:</span>
-                            <span class="price">$${((levelData.income * 50) - levelData.cost).toLocaleString()}</span>
+                            <span>Status:</span>
+                            <span class="price">Active</span>
                         </div>
-                        <button 
-                            class="buy-btn" 
-                            ${isCurrentLevel || isLowerLevel ? 'disabled' : ''}
-                            onclick="openTransaction('Level ${levelNum}', ${levelData.cost}, ${levelData.income}, ${levelNum})"
-                        >
-                            ${isCurrentLevel ? 'Current Level' : isLowerLevel ? 'Lower Level' : 'Upgrade Now'}
-                        </button>
+                        <button class="buy-btn" disabled>Current Level</button>
                     </div>
                 `;
-            }).join('');
+            }
 
-            upgradeContainer.innerHTML = levelsHtml;
+            upgradeContainer.innerHTML = currentLevelHtml + levelsHtml;
+        }
+
+        function showAuthRequired() {
+            loadingScreen.style.display = 'none';
+            mainApp.style.display = 'none';
+            authRequired.style.display = 'flex';
         }
 
         function showMainApp() {
@@ -948,14 +985,7 @@
                 confirmPayment.disabled = true;
                 confirmPayment.textContent = 'Processing...';
 
-                // Update user level immediately
-                const userRef = ref(database, `users/${currentUser.uid}`);
-                await update(userRef, {
-                    level: currentTransaction.levelNum,
-                    lastUpdated: serverTimestamp()
-                });
-
-                // Log the transaction for record keeping
+                // Submit for admin approval (do NOT update user level immediately)
                 const transactionData = {
                     userId: currentUser.uid,
                     userEmail: currentUser.email,
@@ -963,31 +993,21 @@
                     levelNum: currentTransaction.levelNum,
                     amount: currentTransaction.price,
                     dailyOutput: currentTransaction.dailyOutput,
-                    status: 'completed',
+                    status: 'pending',
                     createdAt: serverTimestamp(),
                     walletAddress: walletAddress.value,
                     type: 'levelUpgrade'
                 };
 
-                await push(ref(database, 'completedTransactions'), transactionData);
+                await push(ref(database, 'pendingTransactions'), transactionData);
                 
-                showMessage(paymentSuccess, 'Level upgraded successfully!');
-                
-                // Update the pending payment message
-                const pendingMessage = document.querySelector('.pending-message');
-                pendingMessage.innerHTML = `
-                    <span>Your level has been updated successfully!</span>
-                    <span><strong>New Level:</strong> ${currentTransaction.levelName}</span>
-                    <span><strong>Daily Income:</strong> $${currentTransaction.dailyOutput}</span>
-                    <span><strong>Status:</strong> Active - Ready to mine!</span>
-                `;
-                
+                showMessage(paymentSuccess, 'Payment submitted successfully!');
                 pendingPayment.classList.add('show');
                 
                 setTimeout(closeTransaction, 3000);
 
             } catch (error) {
-                showMessage(paymentError, 'Failed to upgrade level: ' + error.message, true);
+                showMessage(paymentError, 'Failed to submit payment: ' + error.message, true);
             } finally {
                 confirmPayment.disabled = false;
                 confirmPayment.textContent = 'I have made the payment';
