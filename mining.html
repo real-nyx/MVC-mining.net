@@ -393,15 +393,68 @@
     const firestore = getFirestore(app);
 
     let isMining = false, payoutTimer = null, countdownTimer = null, currentUser = null;
-    let userData = { wallet: { usdBalance: 0 }, totalMined: 0, sessions: 0, level: "1", miningState: null };
+    let userData = { wallet: { usdBalance: 0 }, totalMined: 0, sessions: 0, level: 0, miningState: null };
 
-    const LEVELS = {
-        "1": { name: "Beginner", cost: 100, dailyRate: 50, days: 1, payoutInterval: 60000, get minuteRate() { return this.dailyRate / 1440; } },
-        "2": { name: "Professional", cost: 500, dailyRate: 200, days: 3, payoutInterval: 3600000, get hourlyRate() { return this.dailyRate / 24; } },
-        "3": { name: "Expert", cost: 1000, dailyRate: 350, days: 5, payoutInterval: 3600000, get hourlyRate() { return this.dailyRate / 24; } },
-        "4": { name: "Master", cost: 2500, dailyRate: 600, days: 7, payoutInterval: 3600000, get hourlyRate() { return this.dailyRate / 24; } },
-        "5": { name: "Legendary", cost: 5000, dailyRate: 1000, days: 10, payoutInterval: 3600000, get hourlyRate() { return this.dailyRate / 24; } }
-    };
+   const LEVELS = {
+  "1": { 
+    name: "Beginner", 
+    cost: 500,        // pay $500
+    dailyRate: 20,    // earn $20 daily
+    days: 1, 
+    payoutInterval: 60000, // every 1 minute
+    get minuteRate() { return this.dailyRate / 1440; } 
+  },
+  "2": { 
+    name: "Professional", 
+    cost: 900,        // pay $900
+    dailyRate: 36,    // earn $36 daily
+    days: 3, 
+    payoutInterval: 3600000, // every 1 hour
+    get hourlyRate() { return this.dailyRate / 24; } 
+  },
+  "3": { 
+    name: "Expert", 
+    cost: 1500,       // pay $1500
+    dailyRate: 60,    // earn $60 daily
+    days: 5, 
+    payoutInterval: 3600000, 
+    get hourlyRate() { return this.dailyRate / 24; } 
+  },
+  "4": { 
+    name: "Master", 
+    cost: 4500,       // pay $4500
+    dailyRate: 180,   // earn $180 daily
+    days: 7, 
+    payoutInterval: 3600000, 
+    get hourlyRate() { return this.dailyRate / 24; } 
+  },
+  "5": { 
+    name: "Legendary", 
+    cost: 10000,      // pay $10,000
+    dailyRate: 400,   // earn $400 daily
+    days: 10, 
+    payoutInterval: 3600000, 
+    get hourlyRate() { return this.dailyRate / 24; } 
+  },
+  "6": { 
+    name: "Mythical", 
+    cost: 20000,      // pay $20,000
+    dailyRate: 800,   // earn $900 daily
+    days: 14, 
+    payoutInterval: 3600000, 
+    get hourlyRate() { return this.dailyRate / 24; } 
+  },
+  "7": { 
+    name: "Ultimate", 
+    cost: 25000,      // pay $25,000
+    dailyRate: 1000,  // earn $1000 daily
+    days: 30, 
+    payoutInterval: 3600000, 
+    get hourlyRate() { return this.dailyRate / 24; } 
+  }
+};
+
+
 
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
