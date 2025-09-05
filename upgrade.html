@@ -66,6 +66,25 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .current-level {
+            background: #ea580c;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+            width: fit-content;
         }
 
         .balance {
@@ -116,12 +135,32 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             text-align: center;
+            position: relative;
         }
 
         .card:hover {
             transform: translateY(-8px);
             box-shadow: 0 8px 25px rgba(234, 88, 12, 0.15);
             border-color: #ea580c;
+        }
+
+        .card.current-level {
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .card.current-level::before {
+            content: "Current Level";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #16a34a;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .card img {
@@ -178,9 +217,16 @@
             transition: all 0.2s ease;
         }
 
-        .buy-btn:hover {
+        .buy-btn:hover:not(:disabled) {
             background: #dc2626;
             transform: translateY(-1px);
+        }
+
+        .buy-btn:disabled {
+            background: #e5e5e5;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .transaction {
@@ -438,6 +484,62 @@
             cursor: pointer;
             margin-top: 1rem;
         }
+
+        .auth-required {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #fefbf6;
+            padding: 2rem;
+        }
+
+        .auth-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+        }
+
+        .auth-card h2 {
+            color: #ea580c;
+            margin-bottom: 1rem;
+            font-size: 1.75rem;
+        }
+
+        .auth-card p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .auth-info {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .auth-info h3 {
+            color: #ea580c;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .auth-info ul {
+            color: #666;
+            text-align: left;
+            margin-left: 1rem;
+        }
+
+        .auth-info li {
+            margin: 0.5rem 0;
+        }
             .main-container {
                 padding: 0.5rem;
             }
@@ -456,6 +558,11 @@
                 margin: 0.5rem auto;
                 padding: 1rem;
             }
+
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
@@ -464,18 +571,41 @@
     <div class="loading-screen" id="loadingScreen">
         <div class="loading-card">
             <div class="spinner"></div>
-            <p>Checking authentication...</p>
+            <p>Loading upgrade options...</p>
         </div>
     </div>
 
-    <!-- Main Application -->
+    <!-- Authentication Required Screen -->
+    <div class="auth-required" id="authRequired" style="display: none;">
+        <div class="auth-card">
+            <h2>🔐 Authentication Required</h2>
+            <p>You need to be logged in to access the mining upgrade page.</p>
+            
+            <div class="auth-info">
+                <h3>To get started:</h3>
+                <ul>
+                    <li>Create an account or log in to your existing account</li>
+                    <li>Verify your email address</li>
+                    <li>Access the upgrade page to choose your mining level</li>
+                    <li>Start earning with VeChain mining</li>
+                </ul>
+            </div>
+            
+            <p style="font-size: 0.9rem; color: #666;">
+                Please log in through the main application to continue.
+            </p>
+        </div>
+    </div>
     <div class="main-container" id="mainApp">
         <div class="user-info">
-            <div>
-                <span>Welcome, <strong id="userName">User</strong></span>
-                <span class="status-indicator" id="statusIndicator"></span>
-                <div class="balance">Balance: $<span id="userBalance">0.00</span></div>
+            <div class="user-details">
+                <div>
+                    <span>Welcome, <strong id="userName">User</strong></span>
+                    <span class="status-indicator" id="statusIndicator"></span>
+                </div>
+                <div class="current-level" id="currentLevelBadge">No Level</div>
             </div>
+            <div class="balance">Balance: $<span id="userBalance">0.00</span></div>
         </div>
 
         <div class="header">
@@ -483,104 +613,8 @@
             <p>Choose your mining level to start earning</p>
         </div>
 
-        <div class="upgrade-container">
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 1</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$20</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$500</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 1', 500, 20)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 2</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$36</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$900</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 2', 900, 36)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 3</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$60</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$1,500</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 3', 1500, 60)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 4</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$180</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$4,500</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 4', 4500, 180)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 5</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$400</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$10,000</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 5', 10000, 400)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 6</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$800</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$20,000</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 6', 20000, 800)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 7</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$1,000</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$25,000</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 7', 25000, 1000)">Buy Now</button>
-            </div>
+        <div class="upgrade-container" id="upgradeContainer">
+            <!-- Levels will be loaded dynamically -->
         </div>
     </div>
 
@@ -628,12 +662,11 @@
 
             <div class="pending-payment" id="pendingPayment">
                 <div class="pending-header">
-                    Payment Submitted Successfully!
+                    Level Upgraded Successfully!
                 </div>
                 <div class="pending-message">
-                    <span>Your payment has been submitted for review</span>
-                    <span><strong>Processing time:</strong> Your wallet will be funded within 24 hours</span>
-                    <span><strong>Status:</strong> Pending admin approval</span>
+                    <span>Your level has been updated successfully!</span>
+                    <span><strong>Status:</strong> Active - Ready to mine!</span>
                 </div>
             </div>
         </div>
@@ -661,7 +694,7 @@
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue, push, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, onValue, push, serverTimestamp, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import firebaseConfig from './firebaseConfig.js';
         
@@ -672,11 +705,15 @@
         let currentUser = null;
         let currentTransaction = null;
         let userPendingTransactions = [];
+        let userData = null;
+        let LEVELS = {};
 
         const loadingScreen = document.getElementById('loadingScreen');
         const mainApp = document.getElementById('mainApp');
         const userName = document.getElementById('userName');
         const userBalance = document.getElementById('userBalance');
+        const currentLevelBadge = document.getElementById('currentLevelBadge');
+        const upgradeContainer = document.getElementById('upgradeContainer');
         const transactionModal = document.getElementById('transactionModal');
         const selectedPackage = document.getElementById('selectedPackage');
         const selectedAmount = document.getElementById('selectedAmount');
@@ -692,12 +729,72 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
+                loadLevels();
                 loadUserData();
-                showMainApp();
             } else {
                 window.location.href = '/login.html';
             }
         });
+
+        function loadLevels() {
+            const levelsRef = ref(database, 'levels');
+            onValue(levelsRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    LEVELS = snapshot.val();
+                } else {
+                    // Default levels if not in database
+                    LEVELS = {
+                        1: { cost: 500, income: 20 },
+                        2: { cost: 900, income: 36 },
+                        3: { cost: 1500, income: 46 },
+                        4: { cost: 45000, income: 180 }
+                    };
+                    set(ref(database, 'levels'), LEVELS);
+                }
+                renderLevels();
+            });
+        }
+
+        function renderLevels() {
+            if (!LEVELS || Object.keys(LEVELS).length === 0) return;
+
+            const levelsHtml = Object.entries(LEVELS).map(([levelNum, levelData]) => {
+                const isCurrentLevel = userData?.level == levelNum;
+                const isLowerLevel = userData?.level && parseInt(levelNum) < parseInt(userData.level);
+                
+                return `
+                    <div class="card ${isCurrentLevel ? 'current-level' : ''}" data-level="${levelNum}">
+                        <img src="bitcoin.jpg" alt="Bitcoin">
+                        <h2>Level ${levelNum}</h2>
+                        <div class="info">
+                            <span>Daily Output:</span>
+                            <span>$${levelData.income}</span>
+                        </div>
+                        <div class="info">
+                            <span>50-Day Total:</span>
+                            <span>$${levelData.income * 50}</span>
+                        </div>
+                        <div class="info">
+                            <span>Price:</span>
+                            <span class="price">$${levelData.cost.toLocaleString()}</span>
+                        </div>
+                        <div class="info">
+                            <span>Profit:</span>
+                            <span class="price">$${((levelData.income * 50) - levelData.cost).toLocaleString()}</span>
+                        </div>
+                        <button 
+                            class="buy-btn" 
+                            ${isCurrentLevel || isLowerLevel ? 'disabled' : ''}
+                            onclick="openTransaction('Level ${levelNum}', ${levelData.cost}, ${levelData.income}, ${levelNum})"
+                        >
+                            ${isCurrentLevel ? 'Current Level' : isLowerLevel ? 'Lower Level' : 'Upgrade Now'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            upgradeContainer.innerHTML = levelsHtml;
+        }
 
         function showMainApp() {
             loadingScreen.style.display = 'none';
@@ -716,12 +813,12 @@
             const userRef = ref(database, `users/${currentUser.uid}`);
             onValue(userRef, (snapshot) => {
                 if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    userName.textContent = userData.profile?.name || 'User';
-                    userBalance.textContent = (userData.wallet?.usdBalance || 0).toFixed(2);
+                    userData = snapshot.val();
+                    updateUserDisplay();
                 } else {
                     initializeUser();
                 }
+                showMainApp();
             });
 
             // Check for pending transactions
@@ -738,32 +835,59 @@
             });
         }
 
+        function updateUserDisplay() {
+            if (!userData) return;
+
+            userName.textContent = userData.profile?.name || currentUser.email.split('@')[0] || 'User';
+            userBalance.textContent = (userData.wallet?.usdBalance || 0).toFixed(2);
+            
+            if (userData.level && LEVELS[userData.level]) {
+                currentLevelBadge.textContent = `Level ${userData.level}`;
+                currentLevelBadge.style.background = '#16a34a';
+            } else {
+                currentLevelBadge.textContent = 'No Level';
+                currentLevelBadge.style.background = '#666';
+            }
+
+            renderLevels(); // Re-render levels with current level highlighting
+        }
+
         async function initializeUser() {
-            const userData = {
+            const newUserData = {
                 profile: {
-                    name: "Crypto Trader",
+                    name: currentUser.displayName || currentUser.email.split('@')[0],
                     email: currentUser.email,
                     joinDate: serverTimestamp(),
                     uid: currentUser.uid
                 },
                 wallet: { usdBalance: 0 },
                 totalMined: 0,
-                level: "1"
+                sessions: 0,
+                level: null
             };
 
-            await set(ref(database, `users/${currentUser.uid}`), userData);
+            await set(ref(database, `users/${currentUser.uid}`), newUserData);
+            userData = newUserData;
+            updateUserDisplay();
         }
 
-        window.openTransaction = (level, price, dailyOutput) => {
+        window.openTransaction = (levelName, price, dailyOutput, levelNum) => {
             // Check for pending transactions first
             if (userPendingTransactions.length > 0) {
                 showPendingNotification();
                 return;
             }
 
-            currentTransaction = { level, price, dailyOutput, timestamp: Date.now() };
-            selectedPackage.textContent = level;
-            selectedAmount.textContent = price;
+            currentTransaction = { 
+                levelName, 
+                price, 
+                dailyOutput, 
+                levelNum: parseInt(levelNum),
+                timestamp: Date.now() 
+            };
+            
+            selectedPackage.textContent = levelName;
+            selectedAmount.textContent = price.toLocaleString();
             transactionModal.style.display = 'block';
         };
 
@@ -777,11 +901,11 @@
                 return `
                     <div class="pending-item">
                         <div>
-                            <strong>${tx.level}</strong><br>
+                            <strong>${tx.levelName || `Level ${tx.levelNum}`}</strong><br>
                             <small style="color: #666;">${date}</small>
                         </div>
                         <div>
-                            <span style="font-weight: 600; color: #16a34a;">$${tx.amount}</span>
+                            <span style="font-weight: 600; color: #16a34a;">$${tx.amount?.toLocaleString() || '0'}</span>
                         </div>
                     </div>
                 `;
@@ -824,26 +948,46 @@
                 confirmPayment.disabled = true;
                 confirmPayment.textContent = 'Processing...';
 
+                // Update user level immediately
+                const userRef = ref(database, `users/${currentUser.uid}`);
+                await update(userRef, {
+                    level: currentTransaction.levelNum,
+                    lastUpdated: serverTimestamp()
+                });
+
+                // Log the transaction for record keeping
                 const transactionData = {
                     userId: currentUser.uid,
                     userEmail: currentUser.email,
-                    level: currentTransaction.level,
+                    levelName: currentTransaction.levelName,
+                    levelNum: currentTransaction.levelNum,
                     amount: currentTransaction.price,
                     dailyOutput: currentTransaction.dailyOutput,
-                    status: 'pending',
+                    status: 'completed',
                     createdAt: serverTimestamp(),
-                    walletAddress: walletAddress.value
+                    walletAddress: walletAddress.value,
+                    type: 'levelUpgrade'
                 };
 
-                await push(ref(database, 'pendingTransactions'), transactionData);
+                await push(ref(database, 'completedTransactions'), transactionData);
                 
-                showMessage(paymentSuccess, 'Payment submitted successfully!');
+                showMessage(paymentSuccess, 'Level upgraded successfully!');
+                
+                // Update the pending payment message
+                const pendingMessage = document.querySelector('.pending-message');
+                pendingMessage.innerHTML = `
+                    <span>Your level has been updated successfully!</span>
+                    <span><strong>New Level:</strong> ${currentTransaction.levelName}</span>
+                    <span><strong>Daily Income:</strong> $${currentTransaction.dailyOutput}</span>
+                    <span><strong>Status:</strong> Active - Ready to mine!</span>
+                `;
+                
                 pendingPayment.classList.add('show');
                 
                 setTimeout(closeTransaction, 3000);
 
             } catch (error) {
-                showMessage(paymentError, 'Failed to submit payment: ' + error.message, true);
+                showMessage(paymentError, 'Failed to upgrade level: ' + error.message, true);
             } finally {
                 confirmPayment.disabled = false;
                 confirmPayment.textContent = 'I have made the payment';
