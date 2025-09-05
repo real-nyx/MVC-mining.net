@@ -526,7 +526,7 @@
                             id="withdrawAmount" 
                             class="form-input"
                             placeholder="Enter amount"
-                            min="1000"
+                            min="30"
                             max="50000"
                             step="0.01"
                         >
@@ -667,7 +667,7 @@ function formatCurrency(amount) {
 
 // Update withdraw button state based on balance
 function updateWithdrawButtonState() {
-    if (userBalance < 1000) {
+    if (userBalance < 30) {
         withdrawBtn.disabled = true;
         withdrawBtn.classList.remove('btn');
         withdrawBtn.classList.add('btn-insufficient');
