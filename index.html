@@ -85,80 +85,47 @@
         .modal-icon.banned { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
         .modal-icon.suspended { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
 
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .modal-message {
-            color: var(--gray);
-            margin-bottom: 16px;
-            line-height: 1.6;
-        }
-
-        .modal-reason {
-            background: var(--hover);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            font-style: italic;
-        }
-
-        .modal-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
+        .modal-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+        .modal-message { color: var(--gray); margin-bottom: 16px; line-height: 1.6; }
+        .modal-reason { background: var(--hover); padding: 12px; border-radius: 8px; margin-bottom: 24px; font-style: italic; }
+        .modal-btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
         .modal-btn:hover { background: #e55a2b; }
 
-        .header {
+        .header, .bottom-nav {
             position: fixed;
-            top: 0;
             left: 0;
             right: 0;
             height: 70px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
             z-index: 1000;
+            padding: 0 24px;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex: 1;
+        .header {
+            top: 0;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
         }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-shrink: 0;
+        .bottom-nav {
+            bottom: 0;
+            justify-content: space-around;
+            border-top: 1px solid var(--border);
+            padding: 8px 16px;
         }
 
-        .brand-container {
+        .brand-container, .user-info {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .header-logo {
-            height: 40px;
-            width: auto;
-            object-fit: contain;
-        }
+        .user-info { gap: 10px; }
+
+        .header-logo { height: 40px; width: auto; object-fit: contain; }
 
         .site-name {
             font-size: 20px;
@@ -167,34 +134,26 @@
             white-space: nowrap;
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .profile-btn {
-            background: var(--border);
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
+        .profile-img {
             width: 36px;
             height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
             transition: all 0.2s ease;
-            font-size: 14px;
-            font-weight: 600;
+            border: 2px solid var(--border);
         }
 
-        .profile-btn:hover { background: var(--hover); }
+        .profile-img:hover { border-color: var(--primary); transform: scale(1.05); }
 
         .user-name {
             font-size: 14px;
             font-weight: 500;
             color: var(--fg);
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .logout-btn {
@@ -211,22 +170,6 @@
 
         .logout-btn:hover { background: #dc2626; }
 
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 70px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            z-index: 1000;
-            padding: 8px 16px;
-        }
-
         .nav-item {
             display: flex;
             flex-direction: column;
@@ -241,31 +184,13 @@
             min-width: 60px;
         }
 
-        .nav-item:hover {
-            background: var(--hover);
-            color: var(--fg);
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 140, 90, 0.1));
-            color: var(--primary);
-            border: 1px solid rgba(255, 107, 53, 0.2);
-        }
-
-        .nav-item svg {
-            width: 24px;
-            height: 24px;
-            margin-bottom: 4px;
-        }
-
-        .nav-item span {
-            font-size: 11px;
-            font-weight: 500;
-        }
+        .nav-item:hover { background: var(--hover); color: var(--fg); }
+        .nav-item.active { background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 140, 90, 0.1)); color: var(--primary); border: 1px solid rgba(255, 107, 53, 0.2); }
+        .nav-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
+        .nav-item span { font-size: 11px; font-weight: 500; }
 
         .main-content {
-            margin-top: 70px;
-            margin-bottom: 70px;
+            margin: 70px 0;
             min-height: calc(100vh - 140px);
         }
 
@@ -277,100 +202,39 @@
         }
 
         .content-frame.active { display: block; }
-
-        /* Desktop Responsive */
-        @media (min-width: 1024px) {
-            .header {
-                padding: 0 48px;
-            }
-            
-            .site-name {
-                font-size: 22px;
-            }
-            
-            .profile-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 15px;
-            }
-            
-            .user-name {
-                font-size: 15px;
-            }
-            
-            .logout-btn {
-                padding: 10px 20px;
-                font-size: 14px;
-            }
-        }
-
-        /* Tablet Responsive */
-        @media (max-width: 1023px) and (min-width: 769px) {
-            .header {
-                padding: 0 32px;
-            }
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .header {
-                padding: 0 16px;
-                height: 60px;
-            }
-            
-            .main-content {
-                margin-top: 60px;
-                min-height: calc(100vh - 130px);
-            }
-            
-            .content-frame {
-                height: calc(100vh - 130px);
-            }
-            
-            .site-name {
-                font-size: 16px;
-            }
-            
-            .header-logo {
-                height: 32px;
-            }
-            
-            .user-name {
-                display: none;
-            }
-            
-            .logout-btn {
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-            
-            .profile-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 13px;
-            }
-        }
-
-        /* Extra small mobile */
-        @media (max-width: 480px) {
-            .header {
-                padding: 0 12px;
-            }
-            
-            .brand-container {
-                gap: 8px;
-            }
-            
-            .header-right {
-                gap: 8px;
-            }
-            
-            .site-name {
-                font-size: 15px;
-            }
-        }
-
         .hidden { display: none !important; }
+
+        /* Responsive */
+        @media (min-width: 1024px) {
+            .header { padding: 0 48px; }
+            .site-name { font-size: 22px; }
+            .profile-img { width: 40px; height: 40px; }
+            .user-name { font-size: 15px; max-width: 250px; }
+            .logout-btn { padding: 10px 20px; font-size: 14px; }
+        }
+
+        @media (max-width: 1023px) and (min-width: 769px) {
+            .header { padding: 0 32px; }
+            .user-name { max-width: 150px; }
+        }
+
+        @media (max-width: 768px) {
+            .header, .bottom-nav { height: 60px; }
+            .header { padding: 0 16px; }
+            .main-content { margin: 60px 0; min-height: calc(100vh - 120px); }
+            .content-frame { height: calc(100vh - 120px); }
+            .site-name { font-size: 16px; }
+            .header-logo { height: 32px; }
+            .user-name { display: none; }
+            .logout-btn { padding: 6px 12px; font-size: 12px; }
+            .profile-img { width: 32px; height: 32px; }
+        }
+
+        @media (max-width: 480px) {
+            .header { padding: 0 12px; }
+            .brand-container { gap: 8px; }
+            .site-name { font-size: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -381,27 +245,23 @@
 
     <div id="app" class="hidden">
         <header class="header">
-            <div class="header-left">
-                <div class="brand-container">
-                    <img src="./assets/images/logo.png" alt="MVC Mining Logo" class="header-logo">
-                    <span class="site-name">MVC Mining</span>
-                </div>
+            <div class="brand-container">
+                <img src="./assets/images/logo.png" alt="MVC Mining Logo" class="header-logo">
+                <span class="site-name">MVC Mining</span>
             </div>
-            <div class="header-right">
-                <div class="user-info">
-                    <button class="profile-btn" id="userInitials">JD</button>
-                    <span class="user-name" id="userName">John Doe</span>
-                </div>
+            <div class="user-info">
+                <img src="./assets/images/default-avatar.png" alt="Profile" class="profile-img" id="userAvatar">
+                <span class="user-name" id="userName">Loading...</span>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </header>
 
-        <main class="main-content" id="mainContent">
-            <iframe class="content-frame active" id="dashboard-frame" data-page="dashboard"></iframe>
-            <iframe class="content-frame" id="leaderboard-frame" data-page="leaderboard"></iframe>
-            <iframe class="content-frame" id="profile-frame" data-page="profile"></iframe>
-            <iframe class="content-frame" id="upgrade-frame" data-page="upgrade"></iframe>
-            <iframe class="content-frame" id="withdraw-frame" data-page="withdraw"></iframe>
+        <main class="main-content">
+            <iframe class="content-frame active" id="dashboard-frame"></iframe>
+            <iframe class="content-frame" id="leaderboard-frame"></iframe>
+            <iframe class="content-frame" id="profile-frame"></iframe>
+            <iframe class="content-frame" id="upgrade-frame"></iframe>
+            <iframe class="content-frame" id="withdraw-frame"></iframe>
         </main>
 
         <nav class="bottom-nav">
@@ -412,7 +272,6 @@
                 </svg>
                 <span>Home</span>
             </a>
-            
             <a href="#" class="nav-item" data-page="leaderboard" data-src="./mining.html">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M16 16v4a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4"></path>
@@ -421,7 +280,6 @@
                 </svg>
                 <span>Mining</span>
             </a>
-            
             <a href="#" class="nav-item" data-page="profile" data-src="./profile.html">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -429,14 +287,12 @@
                 </svg>
                 <span>Profile</span>
             </a>
-            
             <a href="#" class="nav-item" data-page="upgrade" data-src="/upgrade.html">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"></polygon>
                 </svg>
                 <span>Upgrade</span>
             </a>
-            
             <a href="#" class="nav-item" data-page="withdraw" data-src="./withdraw.html">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -452,175 +308,91 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import firebaseConfig from './firebaseConfig.js';
-
+        
+        const firebaseConfig = {}; // Your config here
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-
         const $ = id => document.getElementById(id);
-        let currentUser = null;
 
         const showAccountModal = (type, reason) => {
             const modal = document.createElement('div');
             modal.className = 'account-modal';
             modal.innerHTML = `
                 <div class="modal-content">
-                    <div class="modal-icon ${type}">
-                        ${type === 'banned' ? '🚫' : '⏸️'}
-                    </div>
+                    <div class="modal-icon ${type}">${type === 'banned' ? '🚫' : '⏸️'}</div>
                     <h2 class="modal-title">Account ${type === 'banned' ? 'Banned' : 'Suspended'}</h2>
-                    <p class="modal-message">
-                        Your account has been ${type === 'banned' ? 'permanently banned' : 'temporarily suspended'}.
-                        ${type === 'suspended' ? 'Please contact support for more information.' : ''}
-                    </p>
+                    <p class="modal-message">Your account has been ${type === 'banned' ? 'permanently banned' : 'temporarily suspended'}. ${type === 'suspended' ? 'Please contact support for more information.' : ''}</p>
                     ${reason ? `<div class="modal-reason">Reason: ${reason}</div>` : ''}
                     <button class="modal-btn" onclick="logout()">Sign Out</button>
-                </div>
-            `;
+                </div>`;
             document.body.appendChild(modal);
         };
 
-        const checkUserStatus = async (user) => {
-            try {
-                const userRef = ref(db, `users/${user.uid}`);
-                const snapshot = await get(userRef);
-                
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    const status = userData.status;
-                    const reason = userData.actionReason;
-                    
-                    if (status === 'banned') {
-                        showAccountModal('banned', reason);
-                        return false;
-                    }
-                    
-                    if (status === 'suspended') {
-                        const suspendedUntil = userData.suspendedUntil;
-                        if (suspendedUntil && new Date(suspendedUntil) > new Date()) {
-                            showAccountModal('suspended', reason);
-                            return false;
-                        }
-                    }
-                    
-                    // Update user info in header
-                    const initials = userData.name ? userData.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
-                    const fullName = userData.name || 'User';
-                    
-                    $('userInitials').textContent = initials;
-                    $('userName').textContent = fullName;
-                }
-                
-                return true;
-            } catch (error) {
-                console.error('Error checking user status:', error);
-                return true; // Allow access on error
+        const updateUserInfo = user => {
+            if (user?.email) {
+                $('userName').textContent = user.email;
+                $('userAvatar').src = './assets/images/default-avatar.png';
+                $('userAvatar').alt = `${user.email}'s profile`;
             }
         };
 
-        const redirectToLogin = () => {
-            window.location.href = './login.html';
+        const checkUserStatus = async user => {
+            updateUserInfo(user);
+            try {
+                const snapshot = await get(ref(db, `users/${user.uid}`));
+                if (snapshot.exists()) {
+                    const { status, actionReason, suspendedUntil } = snapshot.val();
+                    if (status === 'banned') {
+                        showAccountModal('banned', actionReason);
+                        return false;
+                    }
+                    if (status === 'suspended' && suspendedUntil && new Date(suspendedUntil) > new Date()) {
+                        showAccountModal('suspended', actionReason);
+                        return false;
+                    }
+                }
+                return true;
+            } catch (error) {
+                console.error('Error checking user status:', error);
+                return true;
+            }
+        };
+
+        const showPage = (pageId, srcUrl) => {
+            document.querySelectorAll('.content-frame, .nav-item').forEach(el => el.classList.remove('active'));
+            const frame = $(`${pageId}-frame`);
+            const nav = document.querySelector(`[data-page="${pageId}"]`);
+            if (frame && nav) {
+                frame.classList.add('active');
+                nav.classList.add('active');
+                frame.src = srcUrl || nav.dataset.src;
+            }
         };
 
         window.logout = async () => {
             try {
                 await signOut(auth);
-                redirectToLogin();
             } catch (error) {
                 console.error('Logout error:', error);
-                redirectToLogin();
             }
+            window.location.href = './login.html';
         };
 
-        const initApp = () => {
-            $('loadingScreen').classList.add('hidden');
-            $('app').classList.remove('hidden');
-            showPage('dashboard', './Dashboard.html');
-        };
-
-        const showPage = (pageId, srcUrl = null) => {
-            console.log('Switching to page:', pageId);
-            
-            // Remove active from all frames and nav items
-            document.querySelectorAll('.content-frame').forEach(frame => {
-                frame.classList.remove('active');
-            });
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Find the target frame and nav item
-            const targetFrame = $(`${pageId}-frame`);
-            const navItem = document.querySelector(`[data-page="${pageId}"]`);
-            
-            if (targetFrame) {
-                // Set active states
-                targetFrame.classList.add('active');
-                if (navItem) {
-                    navItem.classList.add('active');
-                }
-                
-                // Use passed srcUrl or get from nav item
-                const sourceUrl = srcUrl || (navItem ? navItem.getAttribute('data-src') : null);
-                console.log('Using source URL:', sourceUrl);
-                
-                if (sourceUrl) {
-                    // Load the iframe
-                    targetFrame.src = sourceUrl;
-                    console.log('Loading iframe with URL:', sourceUrl);
-                    
-                    // Add event listeners for debugging
-                    targetFrame.onload = function() {
-                        console.log('Successfully loaded:', sourceUrl);
-                    };
-                    
-                    targetFrame.onerror = function() {
-                        console.error('Failed to load:', sourceUrl);
-                    };
-                } else {
-                    console.error('No source URL found for:', pageId);
-                }
-            } else {
-                console.error('Could not find frame for:', pageId);
-            }
-        };
-
-        // Navigation handlers
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const pageId = this.getAttribute('data-page');
-                    const srcUrl = this.getAttribute('data-src');
-                    console.log('Nav clicked - Page:', pageId, 'Source:', srcUrl);
-                    showPage(pageId, srcUrl);
-                });
-            });
-        });
-
-        // Alternative navigation handler if DOMContentLoaded doesn't work
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {
+            item.addEventListener('click', e => {
                 e.preventDefault();
-                const pageId = this.getAttribute('data-page');
-                const srcUrl = this.getAttribute('data-src');
-                console.log('Nav clicked - Page:', pageId, 'Source:', srcUrl);
-                showPage(pageId, srcUrl);
+                showPage(item.dataset.page, item.dataset.src);
             });
         });
 
-        // Auth state listener
-      // Auth state listener
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                const canAccess = await checkUserStatus(user);
-                if (canAccess) {
-                    initApp();
-                }
-            } else {
-                redirectToLogin();
+        onAuthStateChanged(auth, async user => {
+            if (user && await checkUserStatus(user)) {
+                $('loadingScreen').classList.add('hidden');
+                $('app').classList.remove('hidden');
+                showPage('dashboard', './Dashboard.html');
+            } else if (!user) {
+                window.location.href = './login.html';
             }
         });
     </script>
