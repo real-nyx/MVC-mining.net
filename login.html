@@ -13,23 +13,23 @@
         }
 
         :root {
-            --geist-background: #ffffff;
-            --geist-foreground: #000000;
-            --geist-gray: #666666;
-            --geist-light-gray: #999999;
-            --geist-border: #e5e5e5;
-            --geist-hover: #f5f5f5;
+            --background: #ffffff;
+            --foreground: #000000;
+            --gray: #666666;
+            --light-gray: #999999;
+            --border: #e5e5e5;
+            --hover: #f5f5f5;
             --orange-primary: #ff6b35;
             --orange-secondary: #e55a2b;
             --orange-light: #ff8c5a;
-            --error-color: #ef4444;
-            --success-color: #22c55e;
+            --error: #ef4444;
+            --success: #22c55e;
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, var(--orange-primary) 0%, var(--orange-secondary) 100%);
-            color: var(--geist-foreground);
+            color: var(--foreground);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -38,7 +38,7 @@
         }
 
         .login-container {
-            background: var(--geist-background);
+            background: var(--background);
             border-radius: 16px;
             padding: 40px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
@@ -72,12 +72,12 @@
 
         .logo p {
             font-size: 14px;
-            color: var(--geist-gray);
+            color: var(--gray);
         }
 
         .auth-tabs {
             display: flex;
-            background: var(--geist-hover);
+            background: var(--hover);
             border-radius: 8px;
             padding: 4px;
             margin-bottom: 32px;
@@ -91,13 +91,13 @@
             border-radius: 6px;
             font-size: 14px;
             font-weight: 500;
-            color: var(--geist-gray);
+            color: var(--gray);
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .auth-tab.active {
-            background: var(--geist-background);
+            background: var(--background);
             color: var(--orange-primary);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
@@ -110,17 +110,17 @@
             display: block;
             font-size: 14px;
             font-weight: 500;
-            color: var(--geist-foreground);
+            color: var(--foreground);
             margin-bottom: 6px;
         }
 
         .form-input {
             width: 100%;
             padding: 12px 16px;
-            border: 1px solid var(--geist-border);
+            border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 14px;
-            background: var(--geist-background);
+            background: var(--background);
             transition: all 0.2s ease;
         }
 
@@ -131,11 +131,11 @@
         }
 
         .form-input.error {
-            border-color: var(--error-color);
+            border-color: var(--error);
         }
 
         .error-message {
-            color: var(--error-color);
+            color: var(--error);
             font-size: 12px;
             margin-top: 4px;
             display: none;
@@ -145,7 +145,7 @@
             display: block;
         }
 
-        .auth-button {
+        .auth-button, .forgot-button {
             width: 100%;
             padding: 12px;
             background: var(--orange-primary);
@@ -163,13 +163,24 @@
             margin-bottom: 16px;
         }
 
-        .auth-button:hover {
+        .forgot-button {
+            background: var(--hover);
+            color: var(--gray);
+            border: 1px solid var(--border);
+            margin-bottom: 0;
+        }
+
+        .auth-button:hover, .forgot-button:hover {
             background: var(--orange-secondary);
             transform: translateY(-1px);
         }
 
-        .auth-button:disabled {
-            background: var(--geist-light-gray);
+        .forgot-button:hover {
+            background: var(--border);
+        }
+
+        .auth-button:disabled, .forgot-button:disabled {
+            background: var(--light-gray);
             cursor: not-allowed;
             transform: none;
         }
@@ -188,53 +199,9 @@
             100% { transform: rotate(360deg); }
         }
 
-        .divider {
-            text-align: center;
-            margin: 20px 0;
-            position: relative;
-            color: var(--geist-gray);
-            font-size: 12px;
-        }
-
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: var(--geist-border);
-        }
-
-        .divider span {
-            background: var(--geist-background);
-            padding: 0 16px;
-        }
-
-        .guest-button {
-            width: 100%;
-            padding: 12px;
-            background: var(--geist-hover);
-            color: var(--geist-foreground);
-            border: 1px solid var(--geist-border);
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .guest-button:hover {
-            background: var(--geist-border);
-        }
-
         .success-message {
             background: rgba(34, 197, 94, 0.1);
-            color: var(--success-color);
+            color: var(--success);
             padding: 12px 16px;
             border-radius: 8px;
             font-size: 14px;
@@ -247,32 +214,40 @@
             display: block;
         }
 
+        .forgot-link {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .forgot-link button {
+            background: none;
+            border: none;
+            color: var(--orange-primary);
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .forgot-link button:hover {
+            color: var(--orange-secondary);
+        }
+
         .form-footer {
             text-align: center;
             margin-top: 24px;
             font-size: 12px;
-            color: var(--geist-gray);
+            color: var(--gray);
         }
 
-        /* Responsive */
+        .hidden {
+            display: none !important;
+        }
+
         @media (max-width: 480px) {
             .login-container {
                 padding: 32px 24px;
                 margin: 10px;
             }
-        }
-
-        /* Form switching */
-        .login-form {
-            display: block;
-        }
-        
-        .signup-form {
-            display: block;
-        }
-        
-        .hidden {
-            display: none !important;
         }
     </style>
 </head>
@@ -283,642 +258,351 @@
             <p>Your crypto trading dashboard</p>
         </div>
 
-        <!-- Auth Tabs -->
         <div class="auth-tabs">
             <button class="auth-tab active" id="loginTab">Login</button>
             <button class="auth-tab" id="signupTab">Sign Up</button>
+            <button class="auth-tab" id="forgotTab">Reset</button>
         </div>
 
-        <!-- Success Message -->
-        <div class="success-message" id="successMessage">
-            Account created successfully! You can now log in.
-        </div>
+        <div class="success-message" id="successMessage"></div>
 
         <!-- Login Form -->
-        <div class="login-form" id="loginForm">
+        <div id="loginForm">
             <form id="loginFormElement">
                 <div class="form-group">
                     <label class="form-label" for="loginEmail">Email</label>
-                    <input 
-                        type="email" 
-                        class="form-input" 
-                        id="loginEmail" 
-                        placeholder="Enter your email"
-                        required
-                    >
-                    <div class="error-message" id="loginEmailError">Please enter a valid email</div>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="Enter your email" required>
+                    <div class="error-message" id="loginEmailError"></div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="loginPassword">Password</label>
-                    <input 
-                        type="password" 
-                        class="form-input" 
-                        id="loginPassword" 
-                        placeholder="Enter your password"
-                        required
-                    >
-                    <div class="error-message" id="loginPasswordError">Password is required</div>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" required>
+                    <div class="error-message" id="loginPasswordError"></div>
                 </div>
 
                 <button type="submit" class="auth-button" id="loginButton">
-                    <span class="button-text">Sign In</span>
+                    <span>Sign In</span>
                 </button>
             </form>
+
+            <div class="forgot-link">
+                <button type="button" id="showForgotPassword">Forgot your password?</button>
+            </div>
         </div>
 
         <!-- Signup Form -->
-        <div class="signup-form hidden" id="signupForm">
+        <div id="signupForm" class="hidden">
             <form id="signupFormElement">
                 <div class="form-group">
                     <label class="form-label" for="signupName">Full Name</label>
-                    <input 
-                        type="text" 
-                        class="form-input" 
-                        id="signupName" 
-                        placeholder="Enter your full name"
-                        required
-                    >
-                    <div class="error-message" id="signupNameError">Name is required</div>
+                    <input type="text" class="form-input" id="signupName" placeholder="Enter your full name" required>
+                    <div class="error-message" id="signupNameError"></div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="signupEmail">Email</label>
-                    <input 
-                        type="email" 
-                        class="form-input" 
-                        id="signupEmail" 
-                        placeholder="Enter your email"
-                        required
-                    >
-                    <div class="error-message" id="signupEmailError">Please enter a valid email</div>
+                    <input type="email" class="form-input" id="signupEmail" placeholder="Enter your email" required>
+                    <div class="error-message" id="signupEmailError"></div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="signupPassword">Password</label>
-                    <input 
-                        type="password" 
-                        class="form-input" 
-                        id="signupPassword" 
-                        placeholder="Create a password (min 6 characters)"
-                        required
-                        minlength="6"
-                    >
-                    <div class="error-message" id="signupPasswordError">Password must be at least 6 characters</div>
+                    <input type="password" class="form-input" id="signupPassword" placeholder="Create password (min 6 characters)" required minlength="6">
+                    <div class="error-message" id="signupPasswordError"></div>
                 </div>
 
                 <button type="submit" class="auth-button" id="signupButton">
-                    <span class="button-text">Create Account</span>
+                    <span>Create Account</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="forgotForm" class="hidden">
+            <form id="forgotFormElement">
+                <div class="form-group">
+                    <label class="form-label" for="forgotEmail">Email Address</label>
+                    <input type="email" class="form-input" id="forgotEmail" placeholder="Enter your email" required>
+                    <div class="error-message" id="forgotEmailError"></div>
+                </div>
+
+                <button type="submit" class="forgot-button" id="forgotButton">
+                    <span>Send Reset Email</span>
                 </button>
             </form>
         </div>
 
         <div class="form-footer">
-            <p>Secure login powered by Firebase Authentication</p>
+            <p>Secure authentication powered by Firebase</p>
         </div>
     </div>
 
-    <!-- Firebase Setup -->
     <script type="module">
-        // Firebase Setup and Authentication Script
-import firebaseConfig from './firebaseConfig.js';
+        import firebaseConfig from './firebaseConfig.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword,
+            sendPasswordResetEmail,
+            onAuthStateChanged
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { 
+            getDatabase, 
+            ref, 
+            set, 
+            get,
+            update
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-// Import Firebase SDK modules
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword,
-    onAuthStateChanged
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { 
-    getDatabase, 
-    ref, 
-    set, 
-    get 
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
+        // DOM elements
+        const elements = {
+            tabs: {
+                login: document.getElementById('loginTab'),
+                signup: document.getElementById('signupTab'),
+                forgot: document.getElementById('forgotTab')
+            },
+            forms: {
+                login: document.getElementById('loginForm'),
+                signup: document.getElementById('signupForm'),
+                forgot: document.getElementById('forgotForm')
+            },
+            buttons: {
+                login: document.getElementById('loginButton'),
+                signup: document.getElementById('signupButton'),
+                forgot: document.getElementById('forgotButton'),
+                showForgot: document.getElementById('showForgotPassword')
+            },
+            successMessage: document.getElementById('successMessage')
+        };
 
-// DOM Elements Cache
-const elements = {
-    loginTab: document.getElementById('loginTab'),
-    signupTab: document.getElementById('signupTab'),
-    loginForm: document.getElementById('loginForm'),
-    signupForm: document.getElementById('signupForm'),
-    loginFormElement: document.getElementById('loginFormElement'),
-    signupFormElement: document.getElementById('signupFormElement'),
-    loginButton: document.getElementById('loginButton'),
-    signupButton: document.getElementById('signupButton'),
-    successMessage: document.getElementById('successMessage'),
-    inputs: {
-        loginEmail: document.getElementById('loginEmail'),
-        loginPassword: document.getElementById('loginPassword'),
-        signupName: document.getElementById('signupName'),
-        signupEmail: document.getElementById('signupEmail'),
-        signupPassword: document.getElementById('signupPassword')
-    },
-    errors: {
-        loginEmail: document.getElementById('loginEmailError'),
-        loginPassword: document.getElementById('loginPasswordError'),
-        signupName: document.getElementById('signupNameError'),
-        signupEmail: document.getElementById('signupEmailError'),
-        signupPassword: document.getElementById('signupPasswordError')
-    }
-};
+        let currentTab = 'login';
+        let isProcessing = false;
 
-// Application State
-const appState = {
-    currentTab: 'login',
-    isProcessing: false
-};
-
-// Utility Functions
-const utils = {
-    validateEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    },
-
-    showError(inputId, errorId, message) {
-        const input = elements.inputs[inputId];
-        const error = elements.errors[errorId];
+        // Utility functions
+        const $ = id => document.getElementById(id);
+        const validateEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         
-        if (input && error) {
+        const showError = (inputId, message) => {
+            const input = $(inputId);
+            const error = $(inputId + 'Error');
             input.classList.add('error');
             error.textContent = message;
             error.classList.add('show');
-        }
-    },
+        };
 
-    clearError(inputId, errorId) {
-        const input = elements.inputs[inputId];
-        const error = elements.errors[errorId];
-        
-        if (input && error) {
+        const clearError = inputId => {
+            const input = $(inputId);
+            const error = $(inputId + 'Error');
             input.classList.remove('error');
             error.classList.remove('show');
-        }
-    },
+        };
 
-    clearAllErrors() {
-        Object.keys(elements.inputs).forEach(inputId => {
-            const errorId = inputId.replace(/([A-Z])/g, (match, letter) => 
-                letter === 'E' ? 'E' : letter
-            );
-            this.clearError(inputId, errorId);
-        });
-    },
+        const clearAllErrors = () => {
+            ['loginEmail', 'loginPassword', 'signupName', 'signupEmail', 'signupPassword', 'forgotEmail']
+                .forEach(clearError);
+        };
 
-    showLoading(button, isLoading, loadingText = 'Processing...') {
-        if (!button) return;
-        
-        // Store original text if not already stored
-        if (!button.dataset.originalText) {
-            const buttonTextElement = button.querySelector('.button-text');
-            button.dataset.originalText = buttonTextElement ? 
-                buttonTextElement.textContent : 
-                button.textContent.trim();
-        }
-        
-        if (isLoading) {
-            button.disabled = true;
-            button.innerHTML = `<div class="loading-spinner"></div>${loadingText}`;
-            appState.isProcessing = true;
-        } else {
-            button.disabled = false;
-            button.innerHTML = `<span class="button-text">${button.dataset.originalText}</span>`;
-            appState.isProcessing = false;
-        }
-    },
+        const showLoading = (button, loading, text = 'Processing...') => {
+            if (loading) {
+                button.disabled = true;
+                button.innerHTML = `<div class="loading-spinner"></div>${text}`;
+                isProcessing = true;
+            } else {
+                button.disabled = false;
+                button.innerHTML = `<span>${button.dataset.originalText}</span>`;
+                isProcessing = false;
+            }
+        };
 
-    showSuccess(message) {
-        if (elements.successMessage) {
+        const showSuccess = message => {
             elements.successMessage.textContent = message;
             elements.successMessage.classList.add('show');
-        }
-    },
-
-    hideSuccess() {
-        if (elements.successMessage) {
-            elements.successMessage.classList.remove('show');
-        }
-    }
-};
-
-// Tab Management
-const tabManager = {
-    init() {
-        // Set initial state
-        this.switchTab('login');
-        
-        // Add event listeners
-        elements.loginTab?.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchTab('login');
-        });
-
-        elements.signupTab?.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.switchTab('signup');
-        });
-    },
-
-    switchTab(tab) {
-        console.log('Switching to tab:', tab);
-        
-        if (appState.isProcessing) {
-            console.log('Cannot switch tabs while processing');
-            return;
-        }
-        
-        // Clear all form errors
-        utils.clearAllErrors();
-        utils.hideSuccess();
-        
-        // Update tab states
-        elements.loginTab?.classList.remove('active');
-        elements.signupTab?.classList.remove('active');
-        elements.loginForm?.classList.add('hidden');
-        elements.signupForm?.classList.add('hidden');
-        
-        if (tab === 'login') {
-            elements.loginTab?.classList.add('active');
-            elements.loginForm?.classList.remove('hidden');
-        } else if (tab === 'signup') {
-            elements.signupTab?.classList.add('active');
-            elements.signupForm?.classList.remove('hidden');
-        }
-        
-        appState.currentTab = tab;
-    }
-};
-
-// Form Validation
-const validator = {
-    validateLoginForm(formData) {
-        const errors = {};
-        
-        if (!formData.email) {
-            errors.loginEmail = 'Email is required';
-        } else if (!utils.validateEmail(formData.email)) {
-            errors.loginEmail = 'Please enter a valid email';
-        }
-        
-        if (!formData.password) {
-            errors.loginPassword = 'Password is required';
-        }
-        
-        return {
-            isValid: Object.keys(errors).length === 0,
-            errors
         };
-    },
 
-    validateSignupForm(formData) {
-        const errors = {};
-        
-        if (!formData.name?.trim()) {
-            errors.signupName = 'Name is required';
-        } else if (formData.name.trim().length < 2) {
-            errors.signupName = 'Name must be at least 2 characters';
-        }
-        
-        if (!formData.email) {
-            errors.signupEmail = 'Email is required';
-        } else if (!utils.validateEmail(formData.email)) {
-            errors.signupEmail = 'Please enter a valid email';
-        }
-        
-        if (!formData.password) {
-            errors.signupPassword = 'Password is required';
-        } else if (formData.password.length < 6) {
-            errors.signupPassword = 'Password must be at least 6 characters';
-        }
-        
-        return {
-            isValid: Object.keys(errors).length === 0,
-            errors
-        };
-    },
+        const hideSuccess = () => elements.successMessage.classList.remove('show');
 
-    displayErrors(errors) {
-        Object.entries(errors).forEach(([field, message]) => {
-            const errorField = field.replace('signup', '').replace('login', '').toLowerCase();
-            utils.showError(field, field, message);
-        });
-    }
-};
-
-// Database Operations
-const dbOperations = {
-    async createUserProfile(uid, userData) {
-        try {
-            const userRef = ref(database, `users/${uid}`);
-            const initialData = {
-                profile: {
-                    name: userData.name,
-                    email: userData.email,
-                    joinDate: new Date().toISOString(),
-                    uid: uid
-                },
-                wallet: {
-                    btcBalance: 0,
-                    usdValue: 0,
-                    totalValue: 0
-                },
-                transactions: {},
-                marketData: {
-                    btcPrice: 0,
-                    ethPrice: 0,
-                    lastUpdated: new Date().toISOString()
-                }
-            };
+        // Tab management
+        const switchTab = tab => {
+            if (isProcessing) return;
             
-            await set(userRef, initialData);
-            console.log('User profile created for UID:', uid);
-            return true;
-        } catch (error) {
-            console.error('Error creating user profile:', error);
-            throw error;
-        }
-    },
+            clearAllErrors();
+            hideSuccess();
+            
+            // Reset all tabs and forms
+            Object.values(elements.tabs).forEach(t => t.classList.remove('active'));
+            Object.values(elements.forms).forEach(f => f.classList.add('hidden'));
+            
+            // Activate selected tab
+            elements.tabs[tab].classList.add('active');
+            elements.forms[tab].classList.remove('hidden');
+            
+            currentTab = tab;
+        };
 
-    async getUserProfile(uid) {
-        try {
+        // Create user profile in database
+        const createUserProfile = async (uid, userData) => {
             const userRef = ref(database, `users/${uid}`);
             const snapshot = await get(userRef);
-            return snapshot.exists() ? snapshot.val() : null;
-        } catch (error) {
-            console.error('Error fetching user profile:', error);
-            throw error;
-        }
-    }
-};
+            
+            if (!snapshot.exists()) {
+                const initialData = {
+                    profile: {
+                        name: userData.name,
+                        email: userData.email,
+                        joinDate: new Date().toISOString(),
+                        uid: uid
+                    },
+                    wallet: { usdBalance: 0 },
+                    transactions: {},
+                    marketData: {
+                        btcPrice: 0,
+                        ethPrice: 0,
+                        lastUpdated: new Date().toISOString()
+                    }
+                };
+                await set(userRef, initialData);
+            } else {
+                // Update existing user's name if it was missing
+                const existingData = snapshot.val();
+                if (!existingData.profile || !existingData.profile.name) {
+                    await update(userRef, {
+                        'profile/name': userData.name
+                    });
+                }
+            }
+        };
 
-// Authentication Handlers
-const authHandlers = {
-    async handleLogin(formData) {
-        try {
-            utils.showLoading(elements.loginButton, true, 'Signing in...');
-            
-            const userCredential = await signInWithEmailAndPassword(
-                auth, 
-                formData.email, 
-                formData.password
-            );
-            
-            console.log('User logged in:', userCredential.user.uid);
-            
-            // Small delay to show success state
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Redirect to dashboard
-            window.location.href = './';
-            
-        } catch (error) {
-            utils.showLoading(elements.loginButton, false);
-            console.error('Login error:', error);
-            
-            this.handleLoginError(error);
-        }
-    },
-
-    async handleSignup(formData) {
-        try {
-            utils.showLoading(elements.signupButton, true, 'Creating account...');
-            
-            const userCredential = await createUserWithEmailAndPassword(
-                auth, 
-                formData.email, 
-                formData.password
-            );
-            
-            const user = userCredential.user;
-            
-            // Create user profile in database
-            await dbOperations.createUserProfile(user.uid, {
-                name: formData.name.trim(),
-                email: formData.email
-            });
-            
-            console.log('User account created:', user.uid);
-            
-            utils.showLoading(elements.signupButton, false);
-            
-            // Show success message and switch to login
-            utils.showSuccess('Account created successfully! You can now log in.');
-            tabManager.switchTab('login');
-            
-            // Clear signup form
-            elements.signupFormElement?.reset();
-            
-        } catch (error) {
-            utils.showLoading(elements.signupButton, false);
-            console.error('Signup error:', error);
-            
-            this.handleSignupError(error);
-        }
-    },
-
-    handleLoginError(error) {
-        let errorField = 'loginPassword';
-        let errorMessage = 'Login failed. Please try again.';
-        
-        switch (error.code) {
-            case 'auth/user-not-found':
-                errorField = 'loginEmail';
-                errorMessage = 'No account found with this email';
-                break;
-            case 'auth/wrong-password':
-                errorField = 'loginPassword';
-                errorMessage = 'Incorrect password';
-                break;
-            case 'auth/invalid-email':
-                errorField = 'loginEmail';
-                errorMessage = 'Invalid email address';
-                break;
-            case 'auth/invalid-credential':
-                errorField = 'loginPassword';
-                errorMessage = 'Invalid email or password';
-                break;
-            case 'auth/too-many-requests':
-                errorField = 'loginPassword';
-                errorMessage = 'Too many failed attempts. Try again later.';
-                break;
-            case 'auth/network-request-failed':
-                errorField = 'loginPassword';
-                errorMessage = 'Network error. Please check your connection.';
-                break;
-        }
-        
-        utils.showError(errorField, errorField, errorMessage);
-    },
-
-    handleSignupError(error) {
-        let errorField = 'signupPassword';
-        let errorMessage = 'Account creation failed. Please try again.';
-        
-        switch (error.code) {
-            case 'auth/email-already-in-use':
-                errorField = 'signupEmail';
-                errorMessage = 'An account with this email already exists';
-                break;
-            case 'auth/invalid-email':
-                errorField = 'signupEmail';
-                errorMessage = 'Invalid email address';
-                break;
-            case 'auth/weak-password':
-                errorField = 'signupPassword';
-                errorMessage = 'Password is too weak. Use at least 6 characters.';
-                break;
-            case 'auth/network-request-failed':
-                errorField = 'signupPassword';
-                errorMessage = 'Network error. Please check your connection.';
-                break;
-        }
-        
-        utils.showError(errorField, errorField, errorMessage);
-    }
-};
-
-// Form Event Handlers
-const formHandlers = {
-    setupLoginForm() {
-        elements.loginFormElement?.addEventListener('submit', async (e) => {
+        // Form handlers
+        const handleLogin = async e => {
             e.preventDefault();
-            
-            if (appState.isProcessing) return;
-            
-            const formData = {
-                email: elements.inputs.loginEmail?.value || '',
-                password: elements.inputs.loginPassword?.value || ''
-            };
-            
-            // Clear previous errors
-            utils.clearError('loginEmail', 'loginEmail');
-            utils.clearError('loginPassword', 'loginPassword');
-            
-            // Validate form
-            const validation = validator.validateLoginForm(formData);
-            if (!validation.isValid) {
-                validator.displayErrors(validation.errors);
-                return;
-            }
-            
-            // Attempt login
-            await authHandlers.handleLogin(formData);
-        });
-    },
+            if (isProcessing) return;
 
-    setupSignupForm() {
-        elements.signupFormElement?.addEventListener('submit', async (e) => {
+            const email = $('loginEmail').value;
+            const password = $('loginPassword').value;
+
+            clearAllErrors();
+
+            if (!email) return showError('loginEmail', 'Email is required');
+            if (!validateEmail(email)) return showError('loginEmail', 'Invalid email');
+            if (!password) return showError('loginPassword', 'Password is required');
+
+            try {
+                showLoading(elements.buttons.login, true, 'Signing in...');
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = './';
+            } catch (error) {
+                showLoading(elements.buttons.login, false);
+                const messages = {
+                    'auth/user-not-found': 'No account found with this email',
+                    'auth/wrong-password': 'Incorrect password',
+                    'auth/invalid-credential': 'Invalid email or password',
+                    'auth/too-many-requests': 'Too many failed attempts. Try again later.'
+                };
+                showError('loginPassword', messages[error.code] || 'Login failed');
+            }
+        };
+
+        const handleSignup = async e => {
             e.preventDefault();
-            
-            if (appState.isProcessing) return;
-            
-            const formData = {
-                name: elements.inputs.signupName?.value || '',
-                email: elements.inputs.signupEmail?.value || '',
-                password: elements.inputs.signupPassword?.value || ''
-            };
-            
-            // Clear previous errors
-            utils.clearError('signupName', 'signupName');
-            utils.clearError('signupEmail', 'signupEmail');
-            utils.clearError('signupPassword', 'signupPassword');
-            
-            // Validate form
-            const validation = validator.validateSignupForm(formData);
-            if (!validation.isValid) {
-                validator.displayErrors(validation.errors);
-                return;
-            }
-            
-            // Attempt signup
-            await authHandlers.handleSignup(formData);
-        });
-    },
+            if (isProcessing) return;
 
-    setupInputValidation() {
-        // Real-time validation for better UX
-        Object.entries(elements.inputs).forEach(([inputId, input]) => {
-            input?.addEventListener('input', () => {
-                utils.clearError(inputId, inputId);
+            const name = $('signupName').value.trim();
+            const email = $('signupEmail').value;
+            const password = $('signupPassword').value;
+
+            clearAllErrors();
+
+            if (!name) return showError('signupName', 'Name is required');
+            if (name.length < 2) return showError('signupName', 'Name too short');
+            if (!email) return showError('signupEmail', 'Email is required');
+            if (!validateEmail(email)) return showError('signupEmail', 'Invalid email');
+            if (!password) return showError('signupPassword', 'Password is required');
+            if (password.length < 6) return showError('signupPassword', 'Password must be at least 6 characters');
+
+            try {
+                showLoading(elements.buttons.signup, true, 'Creating account...');
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await createUserProfile(userCredential.user.uid, { name, email });
+                
+                showLoading(elements.buttons.signup, false);
+                showSuccess('Account created successfully! You can now log in.');
+                switchTab('login');
+                document.getElementById('signupFormElement').reset();
+            } catch (error) {
+                showLoading(elements.buttons.signup, false);
+                const messages = {
+                    'auth/email-already-in-use': 'Account with this email already exists',
+                    'auth/invalid-email': 'Invalid email address',
+                    'auth/weak-password': 'Password is too weak'
+                };
+                showError('signupPassword', messages[error.code] || 'Signup failed');
+            }
+        };
+
+        const handleForgotPassword = async e => {
+            e.preventDefault();
+            if (isProcessing) return;
+
+            const email = $('forgotEmail').value;
+
+            clearAllErrors();
+
+            if (!email) return showError('forgotEmail', 'Email is required');
+            if (!validateEmail(email)) return showError('forgotEmail', 'Invalid email');
+
+            try {
+                showLoading(elements.buttons.forgot, true, 'Sending email...');
+                await sendPasswordResetEmail(auth, email);
+                
+                showLoading(elements.buttons.forgot, false);
+                showSuccess('Password reset email sent! Check your inbox.');
+                switchTab('login');
+                document.getElementById('forgotFormElement').reset();
+            } catch (error) {
+                showLoading(elements.buttons.forgot, false);
+                const messages = {
+                    'auth/user-not-found': 'No account found with this email',
+                    'auth/invalid-email': 'Invalid email address'
+                };
+                showError('forgotEmail', messages[error.code] || 'Failed to send reset email');
+            }
+        };
+
+// Initialize
+        const init = () => {
+            // Store original button texts
+            Object.values(elements.buttons).forEach(btn => {
+                if (btn) btn.dataset.originalText = btn.textContent;
             });
-        });
-    }
-};
 
-// Auth State Management
-const authStateManager = {
-    init() {
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log('User already logged in, redirecting...');
-                // Small delay to prevent jarring redirect
-                setTimeout(() => {
-                    window.location.href = './';
-                }, 100);
-            }
-        });
-    }
-};
+            // Tab listeners
+            elements.tabs.login.addEventListener('click', () => switchTab('login'));
+            elements.tabs.signup.addEventListener('click', () => switchTab('signup'));
+            elements.tabs.forgot.addEventListener('click', () => switchTab('forgot'));
+            elements.buttons.showForgot.addEventListener('click', () => switchTab('forgot'));
 
-// Application Initialization
-const app_init = {
-    async init() {
-        try {
-            console.log('Initializing CryptoDash Login...');
-            
-            // Check if all required elements exist
-            this.validateDOMElements();
-            
-            // Initialize components
-            tabManager.init();
-            authStateManager.init();
-            formHandlers.setupLoginForm();
-            formHandlers.setupSignupForm();
-            formHandlers.setupInputValidation();
-            
-            console.log('CryptoDash Login initialized successfully');
-            
-        } catch (error) {
-            console.error('Failed to initialize application:', error);
-        }
-    },
+            // Form listeners
+            document.getElementById('loginFormElement').addEventListener('submit', handleLogin);
+            document.getElementById('signupFormElement').addEventListener('submit', handleSignup);
+            document.getElementById('forgotFormElement').addEventListener('submit', handleForgotPassword);
 
-    validateDOMElements() {
-        const requiredElements = [
-            'loginTab', 'signupTab', 'loginForm', 'signupForm',
-            'loginFormElement', 'signupFormElement', 'loginButton', 'signupButton'
-        ];
-        
-        const missingElements = requiredElements.filter(id => !elements[id]);
-        
-        if (missingElements.length > 0) {
-            console.warn('Missing DOM elements:', missingElements);
-        }
-        
-        const missingInputs = Object.entries(elements.inputs)
-            .filter(([key, element]) => !element)
-            .map(([key]) => key);
-            
-        if (missingInputs.length > 0) {
-            console.warn('Missing input elements:', missingInputs);
-        }
-    }
-};
+            // Clear errors on input
+            ['loginEmail', 'loginPassword', 'signupName', 'signupEmail', 'signupPassword', 'forgotEmail']
+                .forEach(id => $(id).addEventListener('input', () => clearError(id)));
 
-// Initialize when DOM is loaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => app_init.init());
-} else {
-    app_init.init();
-}
+            // Check if user is already logged in
+            onAuthStateChanged(auth, user => {
+                if (user) window.location.href = './';
+            });
+        };
+
+        init();
     </script>
 </body>
 </html>
