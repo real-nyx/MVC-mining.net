@@ -480,11 +480,8 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        
-        // Note: You'll need to create this config file or replace with your Firebase config
-        const firebaseConfig = {
-            // Your Firebase configuration here
-        };
+        import firebaseConfig from './firebaseConfig.js';
+
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
