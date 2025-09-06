@@ -9,224 +9,194 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --orange: #ff6b35;
-            --orange-light: rgba(255, 107, 53, 0.1);
+            --primary: #ff5722;
+            --primary-light: rgba(255, 87, 34, 0.1);
+            --primary-dark: #d84315;
             --gray: #666;
-            --border: #e5e5e5;
-            --hover: #f5f5f5;
-            --green: #22c55e;
-            --red: #ef4444;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --search-height: 60px;
+            --gray-light: #f5f5f5;
+            --border: #e0e0e0;
+            --success: #4caf50;
+            --danger: #f44336;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-hover: 0 8px 30px rgba(255,87,34,0.3);
+            --gradient: linear-gradient(135deg, #ff5722 0%, #ff8a65 100%);
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #fafafa;
-            color: #000;
+            background: linear-gradient(to br, #fafafa, #f0f0f0);
+            color: #333;
             font-size: 14px;
-            padding-top: calc(var(--search-height) + 20px);
+            padding-top: 80px;
         }
 
         .header {
-            background: linear-gradient(135deg, var(--orange), #e55a2b);
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 20px 20px;
+            background: var(--gradient);
+            padding: 24px;
+            margin: 20px;
+            border-radius: 16px;
             color: white;
             box-shadow: var(--shadow);
         }
 
-        .header h1 { font-size: 24px; margin-bottom: 4px; }
-        .header p { opacity: 0.9; }
+        .header h1 { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 16px; }
 
-        .search-container {
+        .search-bar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border);
             z-index: 100;
-            transition: all 0.3s ease;
+            padding: 16px 20px;
         }
 
         .search-content {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 12px 20px;
             display: flex;
-            gap: 12px;
+            gap: 16px;
             align-items: center;
         }
 
-        .search-wrapper {
-            position: relative;
+        .search-input {
             flex: 1;
             max-width: 400px;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray);
-            width: 16px;
-            height: 16px;
-        }
-
-        .search-box {
-            width: 100%;
-            padding: 10px 12px 10px 40px;
+            padding: 12px 20px;
             border: 2px solid transparent;
-            border-radius: 25px;
-            font-size: 14px;
+            border-radius: 50px;
             background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
             transition: all 0.3s ease;
         }
 
-        .search-box:focus {
+        .search-input:focus {
             outline: none;
-            border-color: var(--orange);
-            box-shadow: 0 4px 12px var(--orange-light);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 20px;
+            border-radius: 50px;
             cursor: pointer;
-            font-size: 14px;
             font-weight: 500;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
         }
 
-        .btn-primary { 
-            background: var(--orange); 
-            color: white; 
-        }
-        .btn-primary:hover { 
-            background: #e55a2b; 
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
         }
 
-        .btn-success { background: var(--green); color: white; }
-        .btn-success:hover { 
-            background: #16a34a; 
-            transform: translateY(-1px);
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
         }
 
-        .content { padding: 0 20px 20px; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-cancel { background: var(--gray-light); color: var(--gray); }
+
+        .content { padding: 0 20px; }
 
         .users-grid {
             display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .user-card {
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
             background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
             transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid transparent;
         }
 
         .user-card:hover {
-            border-color: var(--orange);
-            box-shadow: 0 8px 25px var(--orange-light);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary);
         }
 
         .user-header {
             display: flex;
             justify-content: space-between;
-            align-items: start;
-            margin-bottom: 16px;
+            align-items: flex-start;
+            margin-bottom: 20px;
         }
 
         .user-info h3 {
-            font-size: 16px;
-            margin-bottom: 4px;
+            font-size: 18px;
             font-weight: 600;
-            word-break: break-word;
+            margin-bottom: 8px;
+            color: #222;
         }
 
         .user-info p {
             color: var(--gray);
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .user-level {
+            background: var(--gradient);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
             font-size: 12px;
-        }
-
-        .user-status {
-            padding: 6px 12px;
-            border-radius: 16px;
-            font-size: 10px;
             font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
         }
-
-        .status-active { background: rgba(34, 197, 94, 0.15); color: var(--green); }
-        .status-inactive { background: rgba(107, 114, 128, 0.15); color: var(--gray); }
 
         .user-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 16px;
+            margin-bottom: 20px;
         }
 
         .stat {
             text-align: center;
-            padding: 12px;
-            background: var(--hover);
-            border-radius: 8px;
-            transition: background 0.2s;
+            padding: 16px;
+            background: var(--gray-light);
+            border-radius: 12px;
         }
 
-        .stat:hover { background: #f0f0f0; }
-
         .stat-value {
+            font-size: 16px;
             font-weight: 600;
-            color: var(--orange);
-            font-size: 14px;
+            color: var(--primary);
+            margin-bottom: 4px;
         }
 
         .stat-label {
-            font-size: 10px;
+            font-size: 11px;
             color: var(--gray);
-            margin-top: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .user-actions button {
+        .user-actions .btn {
             width: 100%;
-            padding: 10px;
-            font-size: 12px;
-            border-radius: 8px;
+            padding: 14px;
         }
 
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            inset: 0;
+            background: rgba(0,0,0,0.6);
             backdrop-filter: blur(4px);
             z-index: 1000;
-            animation: fadeIn 0.3s ease;
         }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal-content {
             position: absolute;
@@ -234,69 +204,55 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 24px;
-            border-radius: 16px;
+            padding: 32px;
+            border-radius: 20px;
             width: 90%;
             max-width: 400px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            animation: slideIn 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
 
-        @keyframes slideIn { 
-            from { transform: translate(-50%, -60%); opacity: 0; } 
-            to { transform: translate(-50%, -50%); opacity: 1; } 
-        }
+        .modal h3 { margin-bottom: 24px; font-size: 20px; font-weight: 600; }
 
-        .modal h3 { margin-bottom: 20px; font-weight: 600; }
-
-        .form-group { margin-bottom: 16px; }
+        .form-group { margin-bottom: 20px; }
 
         .form-group label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             font-weight: 500;
-            font-size: 12px;
             color: var(--gray);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 12px;
+            padding: 12px 16px;
             border: 2px solid var(--border);
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 12px;
             transition: border-color 0.2s;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: var(--orange);
+            border-color: var(--primary);
         }
 
         .modal-actions {
             display: flex;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 24px;
         }
 
-        .modal-actions .btn { flex: 1; padding: 12px; }
-
-        .btn-cancel { background: #f3f4f6; color: var(--gray); }
-        .btn-cancel:hover { background: #e5e7eb; }
+        .modal-actions .btn { flex: 1; }
 
         .loading { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         @media (max-width: 768px) {
-            body { padding-top: calc(var(--search-height) + 10px); }
-            .header { margin: 10px; }
-            .content { padding: 0 10px 10px; }
-            .users-grid { grid-template-columns: 1fr; }
-            .search-content { padding: 8px 10px; }
-            .search-wrapper { max-width: none; }
-            .user-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+            body { padding-top: 70px; }
+            .header { margin: 10px; padding: 20px; }
+            .content { padding: 0 10px; }
+            .users-grid { grid-template-columns: 1fr; gap: 16px; }
+            .search-bar { padding: 12px 10px; }
+            .user-stats { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -306,14 +262,9 @@
         <p>Manage users and credit their accounts</p>
     </div>
 
-    <div class="search-container">
+    <div class="search-bar">
         <div class="search-content">
-            <div class="search-wrapper">
-                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-                <input type="text" id="searchBox" class="search-box" placeholder="Search users by name or email...">
-            </div>
+            <input type="text" id="searchBox" class="search-input" placeholder="Search users by name or email...">
             <button class="btn btn-primary" onclick="refreshUsers()">Refresh</button>
         </div>
     </div>
@@ -351,7 +302,6 @@
         import { getDatabase, ref, onValue, update, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         
-        // Note: Replace with your Firebase config
         import firebaseConfig from './firebaseConfig.js';
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -364,13 +314,24 @@
         const formatDate = d => new Date(d).toLocaleDateString();
         const formatCurrency = a => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(a);
 
+        const getEmailFromUser = userData => userData.profile?.email || userData.email || userData.user?.email || userData.auth?.email || null;
+
+        const getUserDisplayName = (userData, uid) => {
+            const email = getEmailFromUser(userData);
+            return email || userData.profile?.name || userData.name || userData.displayName || `User ${uid.substring(0, 8)}...`;
+        };
+
         const filterUsers = term => {
             if (!term) return users;
+            const lowerTerm = term.toLowerCase();
             return Object.fromEntries(
-                Object.entries(users).filter(([_, u]) => 
-                    (u.profile?.email || '').toLowerCase().includes(term.toLowerCase()) ||
-                    (u.profile?.name || '').toLowerCase().includes(term.toLowerCase())
-                )
+                Object.entries(users).filter(([uid, userData]) => {
+                    const email = getEmailFromUser(userData);
+                    const displayName = getUserDisplayName(userData, uid);
+                    return (email && email.toLowerCase().includes(lowerTerm)) ||
+                           displayName.toLowerCase().includes(lowerTerm) ||
+                           uid.toLowerCase().includes(lowerTerm);
+                })
             );
         };
 
@@ -383,25 +344,23 @@
                 return;
             }
 
-            grid.innerHTML = Object.entries(userList).map(([uid, u]) => {
-                const { profile = {}, wallet = {}, level = 1, totalMined = 0, sessions = 0 } = u;
-                // Prioritize email display - get from profile or fallback to 'No Email'
-                const email = profile.email || 'No Email';
-                const displayName = email; // Use email as the main display name
+            grid.innerHTML = Object.entries(userList).map(([uid, userData]) => {
+                const { profile = {}, wallet = {}, level = 1, totalMined = 0, sessions = 0 } = userData;
+                const email = getEmailFromUser(userData);
+                const displayName = getUserDisplayName(userData, uid);
                 const balance = wallet.usdBalance || 0;
-                const joinDate = profile.joinDate || '';
+                const joinDate = profile.joinDate || userData.joinDate || '';
                 
                 return `
                     <div class="user-card">
                         <div class="user-header">
                             <div class="user-info">
                                 <h3>${displayName}</h3>
-                                <p>User ID: ${uid.substring(0, 12)}...</p>
-                                <p>Joined: ${joinDate ? formatDate(joinDate) : 'Unknown'}</p>
+                                ${email ? `<p>📧 ${email}</p>` : '<p>📧 No Email Available</p>'}
+                                <p>🆔 ${uid.substring(0, 12)}...</p>
+                                <p>📅 ${joinDate ? formatDate(joinDate) : 'Unknown'}</p>
                             </div>
-                            <div class="user-status ${balance > 0 ? 'status-active' : 'status-inactive'}">
-                                Level ${level}
-                            </div>
+                            <div class="user-level">Level ${level}</div>
                         </div>
                         
                         <div class="user-stats">
@@ -424,8 +383,8 @@
                         </div>
                         
                         <div class="user-actions">
-                            <button class="btn btn-success" onclick="openCreditModal('${uid}', '${email.replace(/'/g, "\\'")}')">
-                                Credit Account
+                            <button class="btn btn-success" onclick="openCreditModal('${uid}', '${(email || 'No Email').replace(/'/g, "\\'")}')">
+                                💳 Credit Account
                             </button>
                         </div>
                     </div>
@@ -498,21 +457,20 @@
             renderUsers();
         };
 
-        // Setup listeners
         $('searchBox').oninput = e => renderUsers(filterUsers(e.target.value));
         
         onValue(ref(db, 'users'), snapshot => {
             users = snapshot.val() || {};
+            console.log('Firebase users loaded:', users);
             renderUsers();
         });
 
         onAuthStateChanged(auth, user => {
             if (!user) {
-                $('usersGrid').innerHTML = '<p style="text-align: center; color: var(--red);">Please sign in to access user management</p>';
+                $('usersGrid').innerHTML = '<p style="text-align: center; color: var(--danger);">Please sign in to access user management</p>';
             }
         });
 
-        // Close modal on outside click
         $('creditModal').onclick = e => e.target === $('creditModal') && window.closeModal();
     </script>
 </body>
