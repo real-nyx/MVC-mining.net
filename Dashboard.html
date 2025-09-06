@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Dashboard</title>
+    <title>MVN Mining - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -13,282 +13,258 @@
         }
 
         :root {
-            --geist-background: #ffffff;
-            --geist-foreground: #000000;
-            --geist-gray: #666666;
-            --geist-light-gray: #999999;
-            --geist-border: #e5e5e5;
-            --geist-hover: #f5f5f5;
-            --orange-primary: #ff6b35;
-            --orange-secondary: #e55a2b;
-            --orange-light: #ff8c5a;
+            --orange: #ff6600;
+            --orange-light: #ff8533;
+            --orange-dark: #e55a00;
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f5;
+            --gray-200: #eeeeee;
+            --gray-300: #e0e0e0;
+            --gray-500: #9e9e9e;
+            --gray-700: #616161;
+            --gray-900: #212121;
+            --green: #00c851;
+            --red: #ff4444;
+            --white: #ffffff;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 20px rgba(0,0,0,0.1);
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--geist-background);
-            color: var(--geist-foreground);
-            min-height: 100vh;
-            font-size: 14px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
             line-height: 1.5;
-            padding: 24px;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Welcome Section */
-        .welcome-section {
-            background: var(--orange-primary);
-            border: 1px solid var(--orange-secondary);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            position: relative;
-            overflow: hidden;
+
+
+        /* Main */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
         }
 
-        .welcome-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
-        .welcome-content {
+        /* Welcome */
+        .welcome {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            position: relative;
-            z-index: 1;
+            gap: 2rem;
         }
 
-        .welcome-text {
-            flex: 1;
-        }
-
-        .welcome-message {
-            font-size: 24px;
+        .welcome h1 {
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 4px;
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+
+        .welcome-name {
+            color: var(--gray-500);
+            font-size: 1.1rem;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--orange), var(--orange-light));
             color: white;
-        }
-
-        .user-name {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 16px;
-        }
-
-        .wallet-section {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 16px;
-            min-width: 200px;
-        }
-
-        .fund-wallet-btn {
-            background: white;
-            color: var(--orange-primary);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .fund-wallet-btn:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: translateY(-1px);
-        }
-
-        .balance-section {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .balance-item {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 6px;
-            border-left: 3px solid white;
-            backdrop-filter: blur(5px);
+            padding: 1.5rem;
+            border-radius: 12px;
+            min-width: 260px;
+            text-align: center;
         }
 
         .balance-label {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.75rem;
+            opacity: 0.8;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            margin-bottom: 0.5rem;
         }
 
         .balance-value {
-            font-size: 16px;
-            font-weight: 600;
-            font-family: 'Courier New', monospace;
-            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
         }
 
-        .btc-value {
-            color: #ffd700;
-        }
-
-        /* Dashboard Grid */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-
-        /* Dashboard Card */
-        .dashboard-card {
-            background: var(--geist-background);
-            border: 1px solid var(--geist-border);
+        .fund-btn {
+            background: white;
+            color: var(--orange);
+            border: none;
+            padding: 0.75rem 1.5rem;
             border-radius: 8px;
-            padding: 24px;
-            transition: all 0.2s ease;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .dashboard-card:hover {
-            border-color: var(--orange-primary);
-            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+        .fund-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--geist-border);
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 1.25rem;
             font-weight: 600;
-            color: var(--orange-primary);
+            margin-bottom: 0.25rem;
         }
 
         .card-subtitle {
-            font-size: 12px;
-            color: var(--geist-gray);
-            margin-top: 4px;
+            color: var(--gray-500);
+            font-size: 0.875rem;
         }
 
-        .status-indicator {
+        .status-badge {
+            background: rgba(0, 200, 81, 0.1);
+            color: var(--green);
+            padding: 0.25rem 0.75rem;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .status-online {
-            background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
+            gap: 0.5rem;
         }
 
         .status-dot {
             width: 6px;
             height: 6px;
-            border-radius: 50%;
             background: currentColor;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
 
-        /* Portfolio Stats */
-        .portfolio-stats {
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Stats */
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
         }
 
-        .stat-item {
+        .stat {
+            background: var(--gray-100);
+            padding: 1.25rem;
+            border-radius: 8px;
             text-align: center;
-            padding: 16px;
-            background: var(--geist-hover);
-            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .stat:hover {
+            background: var(--white);
+            box-shadow: var(--shadow);
         }
 
         .stat-value {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
         }
 
         .stat-label {
-            font-size: 12px;
-            color: var(--geist-gray);
+            color: var(--gray-500);
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        /* Trading Activity */
-        .trading-list {
+        /* Transactions */
+        .transactions {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 0.75rem;
         }
 
-        .trade-item {
+        .transaction {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            background: var(--geist-hover);
-            border-radius: 6px;
-            border-left: 3px solid var(--orange-primary);
+            padding: 1rem;
+            background: var(--gray-100);
+            border-radius: 8px;
+            transition: all 0.2s;
         }
 
-        .trade-info {
-            flex: 1;
+        .transaction:hover {
+            background: var(--white);
+            transform: translateX(4px);
         }
 
-        .trade-pair {
-            font-weight: 500;
-            margin-bottom: 2px;
+        .transaction-type {
+            font-weight: 600;
+            margin-bottom: 0.125rem;
         }
 
-        .trade-time {
-            font-size: 11px;
-            color: var(--geist-gray);
+        .transaction-time {
+            color: var(--gray-500);
+            font-size: 0.75rem;
         }
 
-        .trade-amount {
-            font-family: 'Courier New', monospace;
-            font-weight: 500;
-            text-align: right;
+        .transaction-amount {
+            font-weight: 600;
         }
 
-        /* Loading States */
+        .positive { color: var(--green); }
+        .negative { color: var(--red); }
+
+        /* Loading & Empty */
         .loading {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px;
-            color: var(--geist-gray);
+            padding: 2rem;
+            color: var(--gray-500);
         }
 
-        .loading-spinner {
+        .spinner {
             width: 20px;
             height: 20px;
-            border: 2px solid var(--geist-border);
-            border-top: 2px solid var(--orange-primary);
+            border: 2px solid var(--gray-300);
+            border-top: 2px solid var(--orange);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 12px;
+            margin-right: 0.75rem;
         }
 
         @keyframes spin {
@@ -296,128 +272,104 @@
             100% { transform: rotate(360deg); }
         }
 
+        .empty {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-500);
+        }
+
         /* Connection Status */
-        .connection-status {
+        .connection {
             position: fixed;
-            bottom: 20px;
-            left: 20px;
-            padding: 8px 16px;
+            bottom: 1rem;
+            left: 1rem;
+            background: var(--white);
+            padding: 0.5rem 1rem;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 0.75rem;
             font-weight: 500;
+            box-shadow: var(--shadow);
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: all 0.3s ease;
-            z-index: 1000;
+            gap: 0.5rem;
+            z-index: 100;
         }
 
-        .connection-online {
-            background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.2);
-        }
-
-        .connection-offline {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
+        .connection.online { color: var(--green); }
+        .connection.offline { color: var(--red); }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .welcome-content {
-                flex-direction: column;
-                gap: 20px;
-            }
-            
-            .wallet-section {
-                align-items: flex-start;
-                width: 100%;
-                min-width: auto;
-            }
-
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .portfolio-stats {
-                grid-template-columns: 1fr;
-            }
+            .header-content, .main { padding-left: 1rem; padding-right: 1rem; }
+            .welcome { flex-direction: column; gap: 1.5rem; }
+            .balance-card { min-width: auto; width: 100%; }
+            .cards-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Welcome Section with Wallet -->
-        <div class="welcome-section">
-            <div class="welcome-content">
-                <div class="welcome-text">
-                    <h1 class="welcome-message">Welcome back!</h1>
-                    <p class="user-name" id="userName">Loading...</p>
-                </div>
-                <div class="wallet-section">
-                    <button class="fund-wallet-btn" id="fundWalletBtn">
-                        <span>+</span>
-                        Fund Wallet
-                    </button>
-                    <div class="balance-section">
-                        <div class="balance-item">
-                            <div class="balance-label">USD Value</div>
-                            <div class="balance-value usd-value" id="usdValue">Loading...</div>
-                        </div>
-                    </div>
-                </div>
+    <!-- Main -->
+    <main class="main">
+        <!-- Welcome -->
+        <div class="welcome">
+            <div>
+                <h1>Welcome back!</h1>
+                <div class="welcome-name" id="welcomeName">Loading...</div>
+            </div>
+            <div class="balance-card">
+                <div class="balance-label">Total Balance</div>
+                <div class="balance-value" id="totalBalance">$0.00</div>
+                <button class="fund-btn" id="fundBtn">+ Fund Wallet</button>
             </div>
         </div>
 
-        <!-- Dashboard Grid -->
-        <div class="dashboard-grid">
-            <!-- Transaction History -->
-            <div class="dashboard-card">
+        <!-- Cards -->
+        <div class="cards-grid">
+            <!-- Market Data -->
+            <div class="card">
                 <div class="card-header">
                     <div>
-                        <h3 class="card-title">Transaction History</h3>
-                        <p class="card-subtitle">Recent transactions and trading activity</p>
+                        <div class="card-title">Market Data</div>
+                        <div class="card-subtitle">Real-time prices and stats</div>
                     </div>
-                    <div class="status-indicator status-online">
+                    <div class="status-badge">
                         <span class="status-dot"></span>
                         Live
                     </div>
                 </div>
-                <div class="trading-list" id="tradingList">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        Loading transactions...
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="stat-value" id="btcPrice">-</div>
+                        <div class="stat-label">Bitcoin</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="ethPrice">-</div>
+                        <div class="stat-label">Ethereum</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="totalTx">0</div>
+                        <div class="stat-label">Transactions</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="lastActivity">Never</div>
+                        <div class="stat-label">Last Activity</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Market Data -->
-            <div class="dashboard-card">
+            <!-- Transactions -->
+            <div class="card">
                 <div class="card-header">
                     <div>
-                        <h3 class="card-title">Market Data</h3>
-                        <p class="card-subtitle">Real-time cryptocurrency prices</p>
+                        <div class="card-title">Recent Transactions</div>
+                        <div class="card-subtitle">Latest wallet activity</div>
                     </div>
                 </div>
-                <div class="portfolio-stats">
-                    <div class="stat-item">
-                        <div class="stat-value" id="btcPrice">Loading...</div>
-                        <div class="stat-label">Bitcoin (BTC)</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="ethPrice">Loading...</div>
-                        <div class="stat-label">Ethereum (ETH)</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="totalTransactions">Loading...</div>
-                        <div class="stat-label">Total Transactions</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="lastActivity">Loading...</div>
-                        <div class="stat-label">Last Activity</div>
+                <div class="transactions" id="transactions">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading transactions...
                     </div>
                 </div>
             </div>
@@ -425,365 +377,242 @@
     </main>
 
     <!-- Connection Status -->
-    <div class="connection-status connection-online" id="connectionStatus">
+    <div class="connection offline" id="connection">
         <span class="status-dot"></span>
-        Connected
+        Connecting...
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase Script -->
     <script type="module">
-        // Import Firebase modules
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, set, get, onValue, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import firebaseConfig from './firebaseConfig.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import firebaseConfig from './firebaseConfig.js';
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-const auth = getAuth(app);
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
 
-// Current user UID and connection state
-let currentUserUID = null;
-let isFirebaseConnected = false;
-let isUserAuthenticated = false;
+        let currentUID = null;
+        let userData = null;
 
-// DOM Elements
-const connectionStatus = document.getElementById('connectionStatus');
-const userName = document.getElementById('userName');
-const usdValue = document.getElementById('usdValue');
-const btcPrice = document.getElementById('btcPrice');
-const ethPrice = document.getElementById('ethPrice');
-const totalTransactions = document.getElementById('totalTransactions');
-const lastActivity = document.getElementById('lastActivity');
-const tradingList = document.getElementById('tradingList');
-const fundWalletBtn = document.getElementById('fundWalletBtn');
+        const $ = id => document.getElementById(id);
 
-// Initialize default data structure
-async function initializeData(uid) {
-    try {
-        const userRef = ref(database, `users/${uid}`);
-        const snapshot = await get(userRef);
-        
-        if (!snapshot.exists()) {
-            // Create initial user data with default name
-            const initialData = {
-                profile: {
-                    name: " ", // Default name
-                    email: "",
-                    joinDate: new Date().toISOString(),
-                    uid: uid
-                },
-                wallet: {
-                    usdBalance: 0  // Using same path as mining app
-                },
-                totalMined: 0,
-                sessions: 0,
-                transactions: {},
-                level: "1",
-                miningState: null,
-                marketData: {
-                    btcPrice: 0,
-                    ethPrice: 0,
-                    lastUpdated: new Date().toISOString()
-                }
-            };
+        // Utilities
+        const formatCurrency = (amount) => {
+            if (!amount && amount !== 0) return '$0.00';
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(Number(amount));
+        };
+
+        const formatTimeAgo = (timestamp) => {
+            if (!timestamp) return '-';
+            const diff = Date.now() - timestamp;
+            const mins = Math.floor(diff / 60000);
+            const hrs = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
             
-            await set(userRef, initialData);
-            console.log('Initial data created for UID:', uid);
-        }
-        
-    } catch (error) {
-        console.error('Error initializing data:', error);
-        updateConnectionStatus(false);
-    }
-}
+            if (days > 0) return `${days}d ago`;
+            if (hrs > 0) return `${hrs}h ago`;
+            if (mins > 0) return `${mins}m ago`;
+            return 'Just now';
+        };
 
-// Update connection status
-function updateConnectionStatus(isOnline, isAuthenticated = false) {
-    let statusText = '';
-    let statusClass = '';
-    
-    if (!isOnline) {
-        statusText = 'Connection failed';
-        statusClass = 'connection-status connection-offline';
-    } else if (!isAuthenticated) {
-        statusText = 'Connecting...';
-        statusClass = 'connection-status connection-offline';
-    } else {
-        statusText = 'Connected & Authenticated';
-        statusClass = 'connection-status connection-online';
-    }
-    
-    connectionStatus.className = statusClass;
-    connectionStatus.innerHTML = `<span class="status-dot"></span>${statusText}`;
-    
-    // Update global state
-    isFirebaseConnected = isOnline;
-    isUserAuthenticated = isAuthenticated;
-}
+        const getInitials = (name) => {
+            if (!name) return 'MV';
+            return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+        };
 
-// Load user data
-function loadUserData(uid) {
-    const userRef = ref(database, `users/${uid}`);
-    
-    onValue(userRef, (snapshot) => {
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            
-            // Update profile - Fixed to properly display name
-            if (data.profile && data.profile.name) {
-                userName.textContent = data.profile.name;
+        // Connection Status
+        const updateConnection = (connected, authenticated = false) => {
+            const el = $('connection');
+            if (!connected) {
+                el.className = 'connection offline';
+                el.innerHTML = '<span class="status-dot"></span>Connection Failed';
+            } else if (!authenticated) {
+                el.className = 'connection offline';
+                el.innerHTML = '<span class="status-dot"></span>Authenticating...';
             } else {
-                // If no name is set, show default
-                userName.textContent = 'Crypto Trader';
+                el.className = 'connection online';
+                el.innerHTML = '<span class="status-dot"></span>Connected';
             }
-            
-            // Update wallet - using usdBalance path from mining app
-            if (data.wallet) {
-                const balance = data.wallet.usdBalance || 0;
-                usdValue.textContent = `$ ${balance.toFixed(2)}`;
+        };
+
+        // Initialize User Data
+        const initUser = async (uid) => {
+            try {
+                const userRef = ref(database, `users/${uid}`);
+                const snapshot = await get(userRef);
                 
-                // Hide BTC balance element if it exists
-                const btcBalanceElement = document.getElementById('btcBalance');
-                if (btcBalanceElement) {
-                    const btcCard = btcBalanceElement.closest('.stat-card');
-                    if (btcCard) {
-                        btcCard.style.display = 'none';
-                    }
+                // Only create initial data if user doesn't exist
+                // This prevents overwriting existing user data
+                if (!snapshot.exists()) {
+                    const initialData = {
+                        profile: {
+                            name: "MVN Miner", // This will be overwritten when user registers
+                            email: "",
+                            joinDate: new Date().toISOString(),
+                            uid: uid
+                        },
+                        wallet: { usdBalance: 0 },
+                        transactions: {},
+                        marketData: {
+                            btcPrice: 0,
+                            ethPrice: 0,
+                            lastUpdated: new Date().toISOString()
+                        }
+                    };
+                    await set(userRef, initialData);
+                }
+            } catch (error) {
+                console.error('Init error:', error);
+                updateConnection(false);
+            }
+        };
+
+        // Update UI
+        const updateUI = () => {
+            if (!userData) return;
+
+            const profile = userData.profile || {};
+            const wallet = userData.wallet || {};
+            const marketData = userData.marketData || {};
+
+            // Profile
+            const name = profile.name || 'MVN Miner';
+            $('welcomeName').textContent = name;
+
+            // Balance - Fixed to show $0.00 when balance is 0
+            const balance = wallet.usdBalance || 0;
+            $('totalBalance').textContent = formatCurrency(balance);
+
+            // Market Data
+            if (marketData.btcPrice) {
+                $('btcPrice').textContent = formatCurrency(marketData.btcPrice);
+                $('ethPrice').textContent = formatCurrency(marketData.ethPrice);
+            } else {
+                $('btcPrice').textContent = 'Loading...';
+                $('ethPrice').textContent = 'Loading...';
+            }
+        };
+
+        // Load Data
+        const loadUserData = (uid) => {
+            const userRef = ref(database, `users/${uid}`);
+            onValue(userRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    userData = snapshot.val();
+                    updateUI();
+                    updateConnection(true, true);
+                }
+            }, (error) => {
+                console.error('Load error:', error);
+                updateConnection(false);
+            });
+        };
+
+        const loadTransactions = (uid) => {
+            const txRef = ref(database, `users/${uid}/transactions`);
+            onValue(txRef, (snapshot) => {
+                const transactions = [];
+                if (snapshot.exists()) {
+                    Object.values(snapshot.val()).forEach(tx => transactions.push(tx));
+                    transactions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                }
+
+                // Update stats
+                $('totalTx').textContent = transactions.length;
+                $('lastActivity').textContent = transactions.length > 0 
+                    ? formatTimeAgo(transactions[0].timestamp) 
+                    : '-';
+
+                // Render transactions
+                renderTransactions(transactions.slice(0, 5));
+            });
+        };
+
+        const renderTransactions = (transactions) => {
+            const container = $('transactions');
+            
+            if (transactions.length === 0) {
+                container.innerHTML = '<div class="empty">No transactions yet</div>';
+                return;
+            }
+
+            container.innerHTML = transactions.map(tx => {
+                const amount = tx.amount || 0;
+                const isPositive = amount > 0;
+                const type = isPositive ? 'DEPOSIT' : 'WITHDRAWAL';
+                const className = isPositive ? 'positive' : 'negative';
+                
+                return `
+                    <div class="transaction">
+                        <div>
+                            <div class="transaction-type">${type}</div>
+                            <div class="transaction-time">${formatTimeAgo(tx.timestamp)}</div>
+                        </div>
+                        <div class="transaction-amount ${className}">
+                            ${formatCurrency(Math.abs(amount))}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        // Market Data
+        const updateMarketData = async (uid) => {
+            try {
+                const btcPrice = 43000 + (Math.random() - 0.5) * 4000;
+                const ethPrice = 2500 + (Math.random() - 0.5) * 400;
+                
+                const marketRef = ref(database, `users/${uid}/marketData`);
+                await set(marketRef, {
+                    btcPrice: Math.round(btcPrice),
+                    ethPrice: Math.round(ethPrice),
+                    lastUpdated: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('Market update error:', error);
+            }
+        };
+
+        // Auth Handler
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUID = user.uid;
+                await initUser(currentUID);
+                loadUserData(currentUID);
+                loadTransactions(currentUID);
+                
+                // Update market data every 30s
+                setInterval(() => updateMarketData(currentUID), 30000);
+                await updateMarketData(currentUID);
+                
+            } else {
+                updateConnection(true, false);
+                try {
+                    await signInAnonymously(auth);
+                } catch (error) {
+                    console.error('Auth error:', error);
+                    updateConnection(false);
                 }
             }
-            
-            // Update market data
-            if (data.marketData && data.marketData.btcPrice > 0) {
-                btcPrice.textContent = `$${data.marketData.btcPrice.toLocaleString()}`;
-                ethPrice.textContent = `$${data.marketData.ethPrice.toLocaleString()}`;
-            } else {
-                btcPrice.textContent = 'Loading...';
-                ethPrice.textContent = 'Loading...';
-            }
-            
-            updateConnectionStatus(true, true);
-        } else {
-            console.log('No user data found');
-            updateConnectionStatus(true, false);
-        }
-    }, (error) => {
-        console.error('Error loading user data:', error);
-        updateConnectionStatus(false, false);
-    });
-}
-
-// Load transactions
-function loadTransactions(uid) {
-    const transactionsRef = ref(database, `users/${uid}/transactions`);
-    
-    onValue(transactionsRef, (snapshot) => {
-        if (snapshot.exists()) {
-            const transactions = snapshot.val();
-            const transactionArray = Object.values(transactions);
-            
-            // Sort by timestamp (newest first)
-            transactionArray.sort((a, b) => b.timestamp - a.timestamp);
-            
-            // Update transaction statistics
-            totalTransactions.textContent = transactionArray.length;
-            
-            if (transactionArray.length > 0) {
-                const lastTx = transactionArray[0];
-                lastActivity.textContent = getTimeAgo(lastTx.timestamp);
-            } else {
-                lastActivity.textContent = 'No activity';
-            }
-            
-            // Display only first 4 transactions
-            const recentTransactions = transactionArray.slice(0, 4);
-            displayTransactions(recentTransactions);
-        } else {
-            tradingList.innerHTML = '<div class="trade-item"><div class="trade-info">No transactions found</div></div>';
-            totalTransactions.textContent = '0';
-            lastActivity.textContent = 'No activity';
-        }
-    });
-}
-
-// Display transactions
-function displayTransactions(transactions) {
-    tradingList.innerHTML = '';
-    
-    if (transactions.length === 0) {
-        tradingList.innerHTML = '<div class="trade-item"><div class="trade-info">No recent transactions</div></div>';
-        return;
-    }
-    
-    transactions.forEach(transaction => {
-        const tradeItem = document.createElement('div');
-        tradeItem.className = 'trade-item';
-        
-        const timeAgo = getTimeAgo(transaction.timestamp);
-        const actionColor = transaction.amount > 0 ? '#22c55e' : '#ef4444';
-        const actionText = transaction.amount > 0 ? 'DEPOSIT' : 'WITHDRAW';
-        
-        tradeItem.innerHTML = `
-            <div class="trade-info">
-                <div class="trade-pair" style="color: ${actionColor}">
-                    ${actionText} USD
-                </div>
-                <div class="trade-time">${timeAgo}</div>
-            </div>
-            <div class="trade-amount">
-                $${Math.abs(transaction.amount).toFixed(2)}
-            </div>
-        `;
-        
-        tradingList.appendChild(tradeItem);
-    });
-}
-
-// Get time ago string
-function getTimeAgo(timestamp) {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-    
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
-    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-    return 'Just now';
-}
-
-// Fund wallet button handler - redirect to /fund
-fundWalletBtn.addEventListener('click', () => {
-    window.location.href = '/upgrade.html';
-});
-
-// Get current market prices (mock)
-async function getCurrentBtcPrice() {
-    try {
-        const basePrice = 43000;
-        const variation = (Math.random() - 0.5) * 4000;
-        return Math.round(basePrice + variation);
-    } catch (error) {
-        console.error('Error getting BTC price:', error);
-        return 43000;
-    }
-}
-
-async function getCurrentEthPrice() {
-    try {
-        const basePrice = 2500;
-        const variation = (Math.random() - 0.5) * 400;
-        return Math.round(basePrice + variation);
-    } catch (error) {
-        console.error('Error getting ETH price:', error);
-        return 2500;
-    }
-}
-
-// Update market data periodically
-async function updateMarketData(uid) {
-    if (!uid) return;
-    
-    try {
-        const btcPriceValue = await getCurrentBtcPrice();
-        const ethPriceValue = await getCurrentEthPrice();
-        
-        const marketDataRef = ref(database, `users/${uid}/marketData`);
-        await set(marketDataRef, {
-            btcPrice: btcPriceValue,
-            ethPrice: ethPriceValue,
-            lastUpdated: new Date().toISOString()
         });
-        
-        console.log(`Market data updated: BTC $${btcPriceValue}, ETH $${ethPriceValue}`);
-    } catch (error) {
-        console.error('Error updating market data:', error);
-    }
-}
 
-// Authentication state handler
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        currentUserUID = user.uid;
-        console.log('User authenticated with UID:', currentUserUID);
-        updateConnectionStatus(true, true);
-        await initializeUserData(currentUserUID);
-    } else {
-        console.log('User not authenticated, signing in anonymously...');
-        updateConnectionStatus(true, false);
-        
-        try {
-            const userCredential = await signInAnonymously(auth);
-            console.log('Anonymous sign-in successful');
-        } catch (error) {
-            console.error('Error with anonymous authentication:', error);
-            updateConnectionStatus(false, false);
-            
-            // Show error in UI
-            userName.textContent = 'Authentication failed';
-            usdValue.textContent = 'Error';
-            tradingList.innerHTML = '<div class="trade-item"><div class="trade-info" style="color: #ef4444;">Authentication error - please refresh page</div></div>';
-        }
-    }
-});
-
-// Initialize user data and dashboard
-async function initializeUserData(uid) {
-    try {
-        await initializeData(uid);
-        loadUserData(uid);
-        loadTransactions(uid);
-        
-        // Update market data every 30 seconds
-        const marketInterval = setInterval(() => updateMarketData(uid), 30000);
-        await updateMarketData(uid);
-        
-        console.log('Dashboard initialized successfully for UID:', uid);
-    } catch (error) {
-        console.error('Error initializing user data:', error);
-        updateConnectionStatus(false, false);
-        
-        // Show error in UI
-        userName.textContent = 'Connection failed';
-        usdValue.textContent = 'Error';
-        tradingList.innerHTML = '<div class="trade-item"><div class="trade-info" style="color: #ef4444;">Failed to connect to database</div></div>';
-    }
-}
-
-// Test Firebase connection on startup
-async function testFirebaseConnection() {
-    try {
-        console.log('Testing Firebase connection...');
-        updateConnectionStatus(false, false);
-        
-        // Test database connection
-        const testRef = ref(database, '.info/connected');
-        onValue(testRef, (snapshot) => {
-            if (snapshot.val() === true) {
-                console.log('Database connected');
-                isFirebaseConnected = true;
-                if (isUserAuthenticated) {
-                    updateConnectionStatus(true, true);
-                }
-            } else {
-                console.log('Database disconnected');
-                isFirebaseConnected = false;
-                updateConnectionStatus(false, false);
-            }
+        // Connection Monitor
+        const connRef = ref(database, '.info/connected');
+        onValue(connRef, (snapshot) => {
+            if (!snapshot.val()) updateConnection(false);
         });
-        
-    } catch (error) {
-        console.error('Firebase connection test failed:', error);
-        updateConnectionStatus(false, false);
-    }
-}
 
-// Start connection test
-testFirebaseConnection();
+        // Fund Button
+        $('fundBtn').addEventListener('click', () => {
+            window.location.href = '/upgrade.html';
+        });
 
-console.log('Starting USD dashboard with authentication...');
+        console.log('MVN Mining Dashboard initialized');
     </script>
 </body>
 </html>
