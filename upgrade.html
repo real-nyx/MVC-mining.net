@@ -2,21 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>VeChain Mining - Upgrade</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #fefbf6;
             color: #171717;
             line-height: 1.6;
-            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .loading-screen {
@@ -31,7 +27,6 @@
             background: white;
             padding: 2rem;
             border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             text-align: center;
         }
 
@@ -45,14 +40,11 @@
             margin: 0 auto 1rem;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .main-container {
-            width: 100%;
-            min-height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 1rem;
             display: none;
         }
@@ -61,19 +53,13 @@
             background: white;
             border-radius: 12px;
             padding: 1rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
-        }
-
-        .user-details {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .current-level {
@@ -81,68 +67,55 @@
             color: white;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            display: inline-block;
             width: fit-content;
         }
 
+        .countdown-info {
+            background: #fff7ed;
+            color: #ea580c;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
         .balance {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 600;
             color: #16a34a;
         }
 
-        .status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-left: 0.5rem;
-            background: #16a34a;
-            box-shadow: 0 0 8px rgba(22, 163, 74, 0.4);
-        }
-
         .header {
-            margin-bottom: 2rem;
             text-align: center;
+            margin-bottom: 1.5rem;
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+            font-size: 2rem;
             color: #ea580c;
-            letter-spacing: 1px;
-        }
-
-        .header p {
-            color: #666;
-            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
         }
 
         .upgrade-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
         }
 
         .card {
             background: white;
             border: 1px solid #e5e5e5;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            border-radius: 12px;
+            padding: 1.25rem;
             text-align: center;
             position: relative;
+            transition: transform 0.3s;
         }
 
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 25px rgba(234, 88, 12, 0.15);
-            border-color: #ea580c;
-        }
+        .card:hover { transform: translateY(-4px); }
 
         .card.current-level {
             border-color: #16a34a;
@@ -152,45 +125,43 @@
         .card.current-level::before {
             content: "Current Level";
             position: absolute;
-            top: -10px;
+            top: -8px;
             left: 50%;
             transform: translateX(-50%);
             background: #16a34a;
             color: white;
-            padding: 0.25rem 0.75rem;
+            padding: 0.2rem 0.6rem;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
         }
 
-        .card img {
-            width: 70px;
-            height: 70px;
-            display: block;
-            margin: 0 auto 1rem auto;
-            border-radius: 50%;
+        .card.countdown-active {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .card.countdown-active::before {
+            content: "Cooldown Active";
+            background: #f59e0b;
         }
 
         .card h2 {
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
+            font-size: 1.15rem;
             color: #ea580c;
-            font-weight: 600;
+            margin-bottom: 1rem;
         }
 
         .info {
-            margin: 0.75rem 0;
-            font-size: 0.95rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.5rem 0;
+            padding: 0.4rem 0;
             border-bottom: 1px solid #f5f5f5;
+            font-size: 0.9rem;
         }
 
-        .info:last-of-type {
-            border-bottom: none;
-        }
+        .info:last-of-type { border-bottom: none; }
 
         .info span:first-child {
             color: #666;
@@ -200,42 +171,40 @@
         .price {
             font-weight: 600;
             color: #16a34a;
-            font-size: 1rem;
+        }
+
+        .countdown-display {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 6px;
+            padding: 0.5rem;
+            margin: 0.75rem 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #f59e0b;
         }
 
         .buy-btn {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.7rem;
             margin-top: 1rem;
             background: #ea580c;
             border: none;
             border-radius: 8px;
             color: white;
-            font-size: 0.95rem;
-            cursor: pointer;
+            font-size: 0.9rem;
             font-weight: 600;
-            transition: all 0.2s ease;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        .buy-btn:hover:not(:disabled) {
-            background: #dc2626;
-            transform: translateY(-1px);
-        }
-
-        .buy-btn:disabled {
-            background: #e5e5e5;
-            color: #999;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .buy-btn:hover:not(:disabled) { background: #dc2626; }
+        .buy-btn:disabled { background: #e5e5e5; color: #999; cursor: not-allowed; }
 
         .transaction {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
+            inset: 0;
+            background: rgba(0,0,0,0.7);
             display: none;
             z-index: 1000;
             padding: 1rem;
@@ -243,21 +212,24 @@
         }
 
         .transaction-content {
-            max-width: 420px;
+            max-width: 400px;
             margin: 1rem auto;
             background: white;
             border-radius: 12px;
             padding: 1.25rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             position: relative;
         }
 
-        .transaction h3 {
-            text-align: center;
-            color: #171717;
-            margin-bottom: 1rem;
-            font-size: 1.25rem;
-            font-weight: 600;
+        .close-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: #f5f5f5;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
         }
 
         .payment-card {
@@ -268,39 +240,12 @@
             margin-bottom: 1rem;
         }
 
-        .crypto-section {
-            text-align: center;
-            margin: 1rem 0;
-        }
-
-        .crypto-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .crypto-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-        }
-
-        .crypto-label {
-            background: #f3f4f6;
-            color: #374151;
-            padding: 0.2rem 0.6rem;
-            border-radius: 16px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
+        .crypto-section { text-align: center; }
 
         .qr-code img {
-            width: 140px;
-            height: 140px;
-            display: block;
-            margin: 0 auto 1rem;
+            width: 120px;
+            height: 120px;
+            margin: 1rem auto;
             border-radius: 8px;
             border: 1px solid #e5e5e5;
         }
@@ -313,46 +258,30 @@
             background: #fafafa;
             text-align: center;
             font-family: monospace;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-            color: #171717;
+            font-size: 0.7rem;
             margin-bottom: 0.75rem;
+        }
+
+        .copy-btn, .confirm-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
         }
 
         .copy-btn {
             background: #3b82f6;
             color: white;
-            padding: 0.5rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            width: auto;
             display: block;
-            margin: 0 auto;
-            font-size: 0.85rem;
-        }
-
-        .copy-btn:hover {
-            background: #2563eb;
+            margin: 0 auto 1rem;
         }
 
         .confirm-btn {
-            width: 100%;
             background: #16a34a;
             color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 1rem;
-        }
-
-        .confirm-btn:hover {
-            background: #15803d;
         }
 
         .pending-payment {
@@ -364,93 +293,25 @@
             display: none;
         }
 
-        .pending-payment.show {
-            display: block;
-        }
-
-        .pending-header {
-            text-align: center;
-            color: #ea580c;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            font-size: 0.9rem;
-        }
-
-        .pending-message {
-            background: white;
-            border-left: 4px solid #ea580c;
-            padding: 0.75rem;
-            border-radius: 6px;
-        }
-
-        .pending-message span {
-            display: block;
-            color: #666;
-            font-size: 0.8rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            background: #f5f5f5;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1rem;
-            color: #666;
-            transition: all 0.2s ease;
-        }
-
-        .error {
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            display: none;
-        }
-
-        .success {
-            background: #dcfce7;
-            border: 1px solid #bbf7d0;
-            color: #16a34a;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            display: none;
-        }
+        .pending-payment.show { display: block; }
 
         .pending-notification {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
+            inset: 0;
+            background: rgba(0,0,0,0.7);
             display: none;
             z-index: 1000;
             padding: 1rem;
         }
 
         .pending-content {
-            max-width: 500px;
+            max-width: 450px;
             margin: 2rem auto;
             background: white;
             border-radius: 12px;
-            padding: 2rem;
-            position: relative;
+            padding: 1.5rem;
             text-align: center;
-        }
-
-        .pending-content h3 {
-            color: #ea580c;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
+            position: relative;
         }
 
         .pending-list {
@@ -463,111 +324,67 @@
         }
 
         .pending-item {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #fbbf24;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #fbbf24;
         }
 
-        .pending-item:last-child {
-            border-bottom: none;
-        }
-
-        .close-pending {
-            background: #ea580c;
-            color: white;
-            border: none;
-            padding: 0.75rem 2rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 1rem;
-        }
+        .pending-item:last-child { border-bottom: none; }
 
         .auth-required {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: #fefbf6;
-            padding: 2rem;
+            padding: 1rem;
         }
 
         .auth-card {
             background: white;
-            border: 1px solid #e5e5e5;
             border-radius: 16px;
-            padding: 3rem;
+            padding: 2rem;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-        }
-
-        .auth-card h2 {
-            color: #ea580c;
-            margin-bottom: 1rem;
-            font-size: 1.75rem;
-        }
-
-        .auth-card p {
-            color: #666;
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            line-height: 1.6;
+            max-width: 450px;
         }
 
         .auth-info {
             background: #fff7ed;
             border: 1px solid #fed7aa;
             border-radius: 8px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
+            padding: 1.25rem;
+            margin: 1.25rem 0;
         }
 
-        .auth-info h3 {
-            color: #ea580c;
-            margin-bottom: 0.5rem;
-            font-size: 1.1rem;
+        .auth-info ul { text-align: left; margin-left: 1rem; }
+
+        .error, .success {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
         }
 
-        .auth-info ul {
-            color: #666;
-            text-align: left;
-            margin-left: 1rem;
+        .error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .success { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+
+        @media (max-width: 640px) {
+            .main-container { padding: 0.75rem; }
+            .header h1 { font-size: 1.6rem; }
+            .upgrade-container { grid-template-columns: 1fr; }
+            .card { padding: 1rem; }
+            .user-info { flex-direction: column; align-items: flex-start; }
+            .transaction-content { max-width: 95%; }
         }
 
-        .auth-info li {
-            margin: 0.5rem 0;
-        }
-            .main-container {
-                padding: 0.5rem;
-            }
-
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            .upgrade-container {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 1rem;
-            }
-
-            .transaction-content {
-                max-width: 350px;
-                margin: 0.5rem auto;
-                padding: 1rem;
-            }
-
-            .user-info {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+        @media (max-width: 480px) {
+            .card { padding: 0.85rem; }
+            .card h2 { font-size: 1rem; }
+            .info { font-size: 0.85rem; }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
     <div class="loading-screen" id="loadingScreen">
         <div class="loading-card">
             <div class="spinner"></div>
@@ -575,85 +392,58 @@
         </div>
     </div>
 
-    <!-- Authentication Required Screen -->
     <div class="auth-required" id="authRequired" style="display: none;">
         <div class="auth-card">
-            <h2>🔐 Authentication Required</h2>
+            <h2>Authentication Required</h2>
             <p>You need to be logged in to access the mining upgrade page.</p>
-            
             <div class="auth-info">
                 <h3>To get started:</h3>
                 <ul>
-                    <li>Create an account or log in to your existing account</li>
+                    <li>Create an account or log in</li>
                     <li>Verify your email address</li>
-                    <li>Access the upgrade page to choose your mining level</li>
+                    <li>Choose your mining level</li>
                     <li>Start earning with VeChain mining</li>
                 </ul>
             </div>
-            
-            <p style="font-size: 0.9rem; color: #666;">
-                Please log in through the main application to continue.
-            </p>
         </div>
     </div>
+
     <div class="main-container" id="mainApp">
         <div class="user-info">
-            <div class="user-details">
-                <div>
-                    <span>Welcome, <strong id="userName">User</strong></span>
-                    <span class="status-indicator" id="statusIndicator"></span>
-                </div>
+            <div>
+                <div>Welcome, <strong id="userName">User</strong></div>
                 <div class="current-level" id="currentLevelBadge">No Level</div>
+                <div class="countdown-info" id="countdownInfo" style="display: none;">Next upgrade: <span id="countdownTimer">--</span></div>
             </div>
             <div class="balance">Balance: $<span id="userBalance">0.00</span></div>
         </div>
 
         <div class="header">
-            <h1>⛏️ VeChain Mining Upgrade</h1>
+            <h1>VeChain Mining Upgrade</h1>
             <p>Choose your mining level to start earning</p>
         </div>
 
-        <div class="upgrade-container" id="upgradeContainer">
-            <!-- Levels will be loaded dynamically -->
-        </div>
+        <div class="upgrade-container" id="upgradeContainer"></div>
     </div>
 
-    <!-- Transaction Modal -->
     <div class="transaction" id="transactionModal">
         <div class="transaction-content">
             <button class="close-btn" onclick="closeTransaction()">×</button>
-            
             <h3>Complete your deposit</h3>
             
             <div class="payment-card">
-                <div>
-                    <label>Package: <span id="selectedPackage"></span></label>
-                    <div style="font-size: 1.1rem; font-weight: 600; color: #ea580c; margin-top: 0.5rem;">
-                        Amount: $<span id="selectedAmount"></span>
-                    </div>
+                <div>Package: <span id="selectedPackage"></span></div>
+                <div style="font-weight: 600; color: #ea580c; margin-top: 0.5rem;">
+                    Amount: $<span id="selectedAmount"></span>
                 </div>
             </div>
 
             <div class="crypto-section">
-                <div class="crypto-header">
-                    <img src="https://via.placeholder.com/24x24/f7931a/ffffff?text=₿" alt="Bitcoin" class="crypto-icon">
-                    <span style="font-weight: 600; color: #171717;">BTC</span>
-                    <div class="crypto-label">COIN</div>
-                </div>
-
                 <div class="qr-code">
                     <img src="qr-code.png" alt="QR Code">
                 </div>
-
-                <div>
-                    <input 
-                        id="walletAddress" 
-                        class="address-input"
-                        value="bc1qw0lzfahwalrupsneygqt7a630825cr2kh9zzv5" 
-                        readonly
-                    >
-                    <button class="copy-btn" id="copyBtn">Copy Address</button>
-                </div>
+                <input id="walletAddress" class="address-input" value="bc1qw0lzfahwalrupsneygqt7a630825cr2kh9zzv5" readonly>
+                <button class="copy-btn" id="copyBtn">Copy Address</button>
             </div>
 
             <button class="confirm-btn" id="confirmPayment">I have made the payment</button>
@@ -661,41 +451,31 @@
             <div class="success" id="paymentSuccess"></div>
 
             <div class="pending-payment" id="pendingPayment">
-                <div class="pending-header">
+                <div style="text-align: center; color: #ea580c; font-weight: 600; margin-bottom: 0.75rem;">
                     Payment Submitted Successfully!
                 </div>
-                <div class="pending-message">
-                    <span>Your payment has been submitted for review</span>
-                    <span><strong>Processing time:</strong> Your level will be updated within 24 hours</span>
-                    <span><strong>Status:</strong> Pending admin approval</span>
+                <div style="background: white; border-left: 4px solid #ea580c; padding: 0.75rem; border-radius: 6px;">
+                    <div style="color: #666; font-size: 0.8rem; margin-bottom: 0.25rem;">Your payment has been submitted for review</div>
+                    <div style="color: #666; font-size: 0.8rem; margin-bottom: 0.25rem;"><strong>Processing time:</strong> Your level will be updated within 24 hours</div>
+                    <div style="color: #666; font-size: 0.8rem;"><strong>Status:</strong> Pending admin approval</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Pending Notification Modal -->
     <div class="pending-notification" id="pendingNotification">
         <div class="pending-content">
             <button class="close-btn" onclick="closePendingNotification()">×</button>
-            
-            <h3>⏳ Pending Transactions</h3>
-            
-            <p style="color: #666; margin-bottom: 1rem;">
-                You have pending transactions that are awaiting admin approval. 
-                Please wait for approval before making new purchases.
-            </p>
-            
+            <h3>Pending Transactions</h3>
+            <p style="color: #666; margin-bottom: 1rem;">You have pending transactions awaiting admin approval.</p>
             <div class="pending-list" id="pendingList"></div>
-            
-            <button class="close-pending" onclick="closePendingNotification()">
-                I Understand
-            </button>
+            <button style="background: #ea580c; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="closePendingNotification()">I Understand</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue, push, serverTimestamp, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, onValue, push, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import firebaseConfig from './firebaseConfig.js';
         
@@ -708,25 +488,30 @@
         let userPendingTransactions = [];
         let userData = null;
         let LEVELS = {};
+        let countdownInterval = null;
 
-        const loadingScreen = document.getElementById('loadingScreen');
-        const mainApp = document.getElementById('mainApp');
-        const authRequired = document.getElementById('authRequired');
-        const userName = document.getElementById('userName');
-        const userBalance = document.getElementById('userBalance');
-        const currentLevelBadge = document.getElementById('currentLevelBadge');
-        const upgradeContainer = document.getElementById('upgradeContainer');
-        const transactionModal = document.getElementById('transactionModal');
-        const selectedPackage = document.getElementById('selectedPackage');
-        const selectedAmount = document.getElementById('selectedAmount');
-        const confirmPayment = document.getElementById('confirmPayment');
-        const pendingPayment = document.getElementById('pendingPayment');
-        const paymentError = document.getElementById('paymentError');
-        const paymentSuccess = document.getElementById('paymentSuccess');
-        const copyBtn = document.getElementById('copyBtn');
-        const walletAddress = document.getElementById('walletAddress');
-        const pendingNotification = document.getElementById('pendingNotification');
-        const pendingList = document.getElementById('pendingList');
+        const elements = {
+            loadingScreen: document.getElementById('loadingScreen'),
+            mainApp: document.getElementById('mainApp'),
+            authRequired: document.getElementById('authRequired'),
+            userName: document.getElementById('userName'),
+            userBalance: document.getElementById('userBalance'),
+            currentLevelBadge: document.getElementById('currentLevelBadge'),
+            countdownInfo: document.getElementById('countdownInfo'),
+            countdownTimer: document.getElementById('countdownTimer'),
+            upgradeContainer: document.getElementById('upgradeContainer'),
+            transactionModal: document.getElementById('transactionModal'),
+            selectedPackage: document.getElementById('selectedPackage'),
+            selectedAmount: document.getElementById('selectedAmount'),
+            confirmPayment: document.getElementById('confirmPayment'),
+            pendingPayment: document.getElementById('pendingPayment'),
+            paymentError: document.getElementById('paymentError'),
+            paymentSuccess: document.getElementById('paymentSuccess'),
+            copyBtn: document.getElementById('copyBtn'),
+            walletAddress: document.getElementById('walletAddress'),
+            pendingNotification: document.getElementById('pendingNotification'),
+            pendingList: document.getElementById('pendingList')
+        };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -741,107 +526,99 @@
         function loadLevels() {
             const levelsRef = ref(database, 'levels');
             onValue(levelsRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    LEVELS = snapshot.val();
-                } else {
-                    // Default levels if not in database
-                    LEVELS = {
-                        1: { cost: 500, income: 20 },
-                        2: { cost: 900, income: 36 },
-                        3: { cost: 1500, income: 46 },
-                        4: { cost: 45000, income: 180 }
-                    };
-                    set(ref(database, 'levels'), LEVELS);
-                }
+                LEVELS = snapshot.exists() ? snapshot.val() : {
+                    1: { cost: 500, income: 20 },
+                    2: { cost: 900, income: 36 },
+                    3: { cost: 1500, income: 46 },
+                    4: { cost: 45000, income: 180 }
+                };
+                if (!snapshot.exists()) set(ref(database, 'levels'), LEVELS);
                 renderLevels();
             });
         }
 
         function renderLevels() {
-            if (!LEVELS || Object.keys(LEVELS).length === 0) return;
+            if (!LEVELS || !userData) return;
 
-            const currentUserLevel = userData?.level ? parseInt(userData.level) : 0;
+            const currentUserLevel = userData.level ? parseInt(userData.level) : 0;
+            const lastUpgradeTime = userData.lastLevelUpgrade || 0;
+            const fiftyDaysMs = 50 * 24 * 60 * 60 * 1000;
+            const timeElapsed = Date.now() - lastUpgradeTime;
+            const canUpgrade = timeElapsed >= fiftyDaysMs;
+            const timeLeft = Math.max(0, fiftyDaysMs - timeElapsed);
 
-            const levelsHtml = Object.entries(LEVELS)
-                .filter(([levelNum]) => parseInt(levelNum) > currentUserLevel) // Only show higher levels
+            let html = '';
+
+            // Show current level card if user has one
+            if (userData.level && LEVELS[userData.level]) {
+                const level = LEVELS[userData.level];
+                const isOnCooldown = !canUpgrade && lastUpgradeTime > 0;
+                
+                html += `
+                    <div class="card current-level">
+                        <h2>Level ${userData.level}</h2>
+                        <div class="info"><span>Daily Output:</span><span>$${level.income}</span></div>
+                        <div class="info"><span>50-Day Total:</span><span>$${level.income * 50}</span></div>
+                        <div class="info"><span>Status:</span><span class="price">Active</span></div>
+                        ${isOnCooldown ? `<div class="countdown-display" id="currentLevelCountdown">${formatTime(timeLeft)}</div>` : ''}
+                        <button class="buy-btn" disabled>Current Level</button>
+                    </div>
+                `;
+
+                // Update countdown in header
+                if (isOnCooldown) {
+                    elements.countdownInfo.style.display = 'block';
+                    startCountdown(timeLeft);
+                } else {
+                    elements.countdownInfo.style.display = 'none';
+                }
+            }
+
+            // Show ALL levels (user can purchase any level)
+            const allLevels = Object.entries(LEVELS)
+                .filter(([levelNum]) => parseInt(levelNum) !== currentUserLevel) // Exclude current level
                 .map(([levelNum, levelData]) => {
+                    const isDisabled = !canUpgrade && lastUpgradeTime > 0;
                     return `
-                        <div class="card" data-level="${levelNum}">
-                            <img src="bitcoin.jpg" alt="Bitcoin" onerror="this.style.display='none'">
+                        <div class="card ${isDisabled ? 'countdown-active' : ''}">
                             <h2>Level ${levelNum}</h2>
-                            <div class="info">
-                                <span>Daily Output:</span>
-                                <span>$${levelData.income}</span>
-                            </div>
-                            <div class="info">
-                                <span>50-Day Total:</span>
-                                <span>$${levelData.income * 50}</span>
-                            </div>
-                            <div class="info">
-                                <span>Price:</span>
-                                <span class="price">$${levelData.cost.toLocaleString()}</span>
-                            </div>
-                            <div class="info">
-                                <span>Profit:</span>
-                                <span class="price">$${((levelData.income * 50) - levelData.cost).toLocaleString()}</span>
-                            </div>
-                            <button 
-                                class="buy-btn" 
-                                onclick="openTransaction('Level ${levelNum}', ${levelData.cost}, ${levelData.income}, ${levelNum})"
-                            >
-                                Upgrade to Level ${levelNum}
+                            <div class="info"><span>Daily Output:</span><span>$${levelData.income}</span></div>
+                            <div class="info"><span>50-Day Total:</span><span>$${levelData.income * 50}</span></div>
+                            <div class="info"><span>Price:</span><span class="price">$${levelData.cost.toLocaleString()}</span></div>
+                            <div class="info"><span>Profit:</span><span class="price">$${((levelData.income * 50) - levelData.cost).toLocaleString()}</span></div>
+                            ${isDisabled ? `<div class="countdown-display">${formatTime(timeLeft)}</div>` : ''}
+                            <button class="buy-btn" ${isDisabled ? 'disabled' : ''} 
+                                onclick="openTransaction('Level ${levelNum}', ${levelData.cost}, ${levelData.income}, ${levelNum})">
+                                ${isDisabled ? 'Cooldown Active' : 'Buy Level ' + levelNum}
                             </button>
                         </div>
                     `;
                 }).join('');
 
-            // Show current level card if user has a level
-            let currentLevelHtml = '';
-            if (userData?.level && LEVELS[userData.level]) {
-                const currentLevel = LEVELS[userData.level];
-                currentLevelHtml = `
-                    <div class="card current-level">
-                        <img src="bitcoin.jpg" alt="Bitcoin" onerror="this.style.display='none'">
-                        <h2>Level ${userData.level}</h2>
-                        <div class="info">
-                            <span>Daily Output:</span>
-                            <span>$${currentLevel.income}</span>
-                        </div>
-                        <div class="info">
-                            <span>50-Day Total:</span>
-                            <span>$${currentLevel.income * 50}</span>
-                        </div>
-                        <div class="info">
-                            <span>Price:</span>
-                            <span class="price">$${currentLevel.cost.toLocaleString()}</span>
-                        </div>
-                        <div class="info">
-                            <span>Status:</span>
-                            <span class="price">Active</span>
-                        </div>
-                        <button class="buy-btn" disabled>Current Level</button>
-                    </div>
-                `;
-            }
-
-            upgradeContainer.innerHTML = currentLevelHtml + levelsHtml;
+            elements.upgradeContainer.innerHTML = html + allLevels;
         }
 
-        function showAuthRequired() {
-            loadingScreen.style.display = 'none';
-            mainApp.style.display = 'none';
-            authRequired.style.display = 'flex';
+        function formatTime(ms) {
+            const days = Math.floor(ms / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((ms % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            return `${days}d ${hours}h`;
         }
 
-        function showMainApp() {
-            loadingScreen.style.display = 'none';
-            mainApp.style.display = 'block';
-        }
-
-        function showMessage(element, message, isError = false) {
-            element.textContent = message;
-            element.style.display = 'block';
-            setTimeout(() => element.style.display = 'none', 5000);
+        function startCountdown(timeLeft) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                timeLeft -= 1000;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    elements.countdownInfo.style.display = 'none';
+                    renderLevels();
+                } else {
+                    elements.countdownTimer.textContent = formatTime(timeLeft);
+                    const countdownEl = document.getElementById('currentLevelCountdown');
+                    if (countdownEl) countdownEl.textContent = formatTime(timeLeft);
+                }
+            }, 1000);
         }
 
         function loadUserData() {
@@ -858,7 +635,6 @@
                 showMainApp();
             });
 
-            // Check for pending transactions
             const pendingRef = ref(database, 'pendingTransactions');
             onValue(pendingRef, (snapshot) => {
                 userPendingTransactions = [];
@@ -874,118 +650,96 @@
 
         function updateUserDisplay() {
             if (!userData) return;
-
-            userName.textContent = userData.profile?.name || currentUser.email.split('@')[0] || 'User';
-            userBalance.textContent = (userData.wallet?.usdBalance || 0).toFixed(2);
+            elements.userName.textContent = userData.profile?.name || currentUser.email.split('@')[0] || 'User';
+            elements.userBalance.textContent = (userData.wallet?.usdBalance || 0).toFixed(2);
             
             if (userData.level && LEVELS[userData.level]) {
-                currentLevelBadge.textContent = `Level ${userData.level}`;
-                currentLevelBadge.style.background = '#16a34a';
+                elements.currentLevelBadge.textContent = `Level ${userData.level}`;
+                elements.currentLevelBadge.style.background = '#16a34a';
             } else {
-                currentLevelBadge.textContent = 'No Level';
-                currentLevelBadge.style.background = '#666';
+                elements.currentLevelBadge.textContent = 'No Level';
+                elements.currentLevelBadge.style.background = '#666';
             }
-
-            renderLevels(); // Re-render levels with current level highlighting
+            renderLevels();
         }
 
         async function initializeUser() {
-            const newUserData = {
-                profile: {
-                    name: currentUser.displayName || currentUser.email.split('@')[0],
-                    email: currentUser.email,
-                    joinDate: serverTimestamp(),
-                    uid: currentUser.uid
-                },
+            userData = {
+                profile: { name: currentUser.displayName || currentUser.email.split('@')[0], email: currentUser.email, uid: currentUser.uid },
                 wallet: { usdBalance: 0 },
                 totalMined: 0,
                 sessions: 0,
                 level: null
             };
+            await set(ref(database, `users/${currentUser.uid}`), userData);
+        }
 
-            await set(ref(database, `users/${currentUser.uid}`), newUserData);
-            userData = newUserData;
-            updateUserDisplay();
+        function showAuthRequired() {
+            elements.loadingScreen.style.display = 'none';
+            elements.authRequired.style.display = 'flex';
+        }
+
+        function showMainApp() {
+            elements.loadingScreen.style.display = 'none';
+            elements.mainApp.style.display = 'block';
         }
 
         window.openTransaction = (levelName, price, dailyOutput, levelNum) => {
-            // Check for pending transactions first
             if (userPendingTransactions.length > 0) {
                 showPendingNotification();
                 return;
             }
 
-            currentTransaction = { 
-                levelName, 
-                price, 
-                dailyOutput, 
-                levelNum: parseInt(levelNum),
-                timestamp: Date.now() 
-            };
-            
-            selectedPackage.textContent = levelName;
-            selectedAmount.textContent = price.toLocaleString();
-            transactionModal.style.display = 'block';
+            currentTransaction = { levelName, price, dailyOutput, levelNum: parseInt(levelNum) };
+            elements.selectedPackage.textContent = levelName;
+            elements.selectedAmount.textContent = price.toLocaleString();
+            elements.transactionModal.style.display = 'block';
         };
-
-        window.closePendingNotification = () => {
-            pendingNotification.style.display = 'none';
-        };
-
-        function showPendingNotification() {
-            const pendingHtml = userPendingTransactions.map(tx => {
-                const date = tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : 'N/A';
-                return `
-                    <div class="pending-item">
-                        <div>
-                            <strong>${tx.levelName || `Level ${tx.levelNum}`}</strong><br>
-                            <small style="color: #666;">${date}</small>
-                        </div>
-                        <div>
-                            <span style="font-weight: 600; color: #16a34a;">$${tx.amount?.toLocaleString() || '0'}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            pendingList.innerHTML = pendingHtml;
-            pendingNotification.style.display = 'block';
-        }
 
         window.closeTransaction = () => {
-            transactionModal.style.display = 'none';
-            pendingPayment.classList.remove('show');
-            paymentError.style.display = 'none';
-            paymentSuccess.style.display = 'none';
+            elements.transactionModal.style.display = 'none';
+            elements.pendingPayment.classList.remove('show');
+            elements.paymentError.style.display = 'none';
+            elements.paymentSuccess.style.display = 'none';
             currentTransaction = null;
         };
 
-        transactionModal.addEventListener('click', (e) => {
-            if (e.target === transactionModal) closeTransaction();
-        });
+        window.closePendingNotification = () => {
+            elements.pendingNotification.style.display = 'none';
+        };
 
-        copyBtn.addEventListener('click', async () => {
+        function showPendingNotification() {
+            const html = userPendingTransactions.map(tx => {
+                const date = tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : 'N/A';
+                return `
+                    <div class="pending-item">
+                        <div><strong>${tx.levelName || `Level ${tx.levelNum}`}</strong><br><small>${date}</small></div>
+                        <div style="font-weight: 600; color: #16a34a;">$${tx.amount?.toLocaleString() || '0'}</div>
+                    </div>
+                `;
+            }).join('');
+            elements.pendingList.innerHTML = html;
+            elements.pendingNotification.style.display = 'block';
+        }
+
+        elements.copyBtn.addEventListener('click', async () => {
             try {
-                await navigator.clipboard.writeText(walletAddress.value);
-                copyBtn.textContent = 'Copied!';
-                copyBtn.style.background = '#16a34a';
-                setTimeout(() => {
-                    copyBtn.textContent = 'Copy Address';
-                    copyBtn.style.background = '#3b82f6';
-                }, 2000);
+                await navigator.clipboard.writeText(elements.walletAddress.value);
+                elements.copyBtn.textContent = 'Copied!';
+                setTimeout(() => elements.copyBtn.textContent = 'Copy Address', 2000);
             } catch (err) {
-                showMessage(paymentError, 'Failed to copy address', true);
+                elements.paymentError.textContent = 'Failed to copy address';
+                elements.paymentError.style.display = 'block';
             }
         });
 
-        confirmPayment.addEventListener('click', async () => {
+        elements.confirmPayment.addEventListener('click', async () => {
             if (!currentTransaction) return;
 
             try {
-                confirmPayment.disabled = true;
-                confirmPayment.textContent = 'Processing...';
+                elements.confirmPayment.disabled = true;
+                elements.confirmPayment.textContent = 'Processing...';
 
-                // Submit for admin approval (do NOT update user level immediately)
                 const transactionData = {
                     userId: currentUser.uid,
                     userEmail: currentUser.email,
@@ -995,27 +749,25 @@
                     dailyOutput: currentTransaction.dailyOutput,
                     status: 'pending',
                     createdAt: serverTimestamp(),
-                    walletAddress: walletAddress.value,
+                    walletAddress: elements.walletAddress.value,
                     type: 'levelUpgrade'
                 };
 
                 await push(ref(database, 'pendingTransactions'), transactionData);
                 
-                showMessage(paymentSuccess, 'Payment submitted successfully!');
-                pendingPayment.classList.add('show');
+                elements.paymentSuccess.textContent = 'Payment submitted successfully!';
+                elements.paymentSuccess.style.display = 'block';
+                elements.pendingPayment.classList.add('show');
                 
                 setTimeout(closeTransaction, 3000);
 
             } catch (error) {
-                showMessage(paymentError, 'Failed to submit payment: ' + error.message, true);
+                elements.paymentError.textContent = 'Failed to submit payment: ' + error.message;
+                elements.paymentError.style.display = 'block';
             } finally {
-                confirmPayment.disabled = false;
-                confirmPayment.textContent = 'I have made the payment';
+                elements.confirmPayment.disabled = false;
+                elements.confirmPayment.textContent = 'I have made the payment';
             }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeTransaction();
         });
     </script>
 </body>
