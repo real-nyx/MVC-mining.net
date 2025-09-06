@@ -480,7 +480,11 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, set, get, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import firebaseConfig from './firebaseConfig.js';
+        
+        // Note: You'll need to create this config file or replace with your Firebase config
+        const firebaseConfig = {
+            // Your Firebase configuration here
+        };
 
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
@@ -525,7 +529,7 @@
             }
         };
 
-        // Initialize user data only if doesn't exist
+        // Enhanced user initialization with better error handling
         const initUser = async uid => {
             try {
                 const userRef = ref(database, `users/${uid}`);
@@ -534,7 +538,7 @@
                 if (!snapshot.exists()) {
                     const initialData = {
                         profile: {
-                            name: "",
+                            name: "New User", // Default name if none provided
                             email: "",
                             joinDate: new Date().toISOString(),
                             uid: uid
@@ -548,27 +552,46 @@
                         }
                     };
                     await set(userRef, initialData);
+                    console.log('Created initial user data');
+                } else {
+                    console.log('User data already exists');
                 }
             } catch (error) {
-                console.error('Init error:', error);
+                console.error('Init user error:', error);
                 updateConnection(false);
             }
         };
 
-        // Update UI with user data
+        // Enhanced UI update with better null/undefined handling
         const updateUI = () => {
-            if (!userData) return;
+            if (!userData) {
+                console.log('No user data available for UI update');
+                return;
+            }
 
+            // Better null checking and fallbacks
             const profile = userData.profile || {};
             const wallet = userData.wallet || {};
             const marketData = userData.marketData || {};
 
-            // Display user name from database
-            $('welcomeName').textContent = profile.name || 'Guest User';
-            $('totalBalance').textContent = formatCurrency(wallet.usdBalance);
+            // Get user's name with multiple fallbacks
+            let userName = 'Guest User'; // Default fallback
+            
+            if (profile.name && profile.name.trim()) {
+                userName = profile.name.trim();
+            } else if (auth.currentUser && auth.currentUser.displayName) {
+                userName = auth.currentUser.displayName;
+            } else if (auth.currentUser && auth.currentUser.email) {
+                // Extract name from email (before @ symbol)
+                userName = auth.currentUser.email.split('@')[0];
+            }
 
-            // Market data
-            if (marketData.btcPrice) {
+            console.log('Updating UI with user name:', userName);
+            $('welcomeName').textContent = userName;
+            $('totalBalance').textContent = formatCurrency(wallet.usdBalance || 0);
+
+            // Market data with fallbacks
+            if (marketData.btcPrice && marketData.ethPrice) {
                 $('btcPrice').textContent = formatCurrency(marketData.btcPrice);
                 $('ethPrice').textContent = formatCurrency(marketData.ethPrice);
             } else {
@@ -577,17 +600,26 @@
             }
         };
 
-        // Load user data
+        // Enhanced user data loading with better error handling
         const loadUserData = uid => {
+            console.log('Loading user data for UID:', uid);
             const userRef = ref(database, `users/${uid}`);
+            
             onValue(userRef, snapshot => {
                 if (snapshot.exists()) {
                     userData = snapshot.val();
+                    console.log('User data loaded:', userData);
                     updateUI();
                     updateConnection(true, true);
+                } else {
+                    console.log('No user data found in database');
+                    // If no data exists, initialize it
+                    initUser(uid).then(() => {
+                        console.log('User initialized, reloading data');
+                    });
                 }
             }, error => {
-                console.error('Load error:', error);
+                console.error('Load user data error:', error);
                 updateConnection(false);
             });
         };
@@ -608,6 +640,8 @@
                     : '-';
 
                 renderTransactions(transactions.slice(0, 5));
+            }, error => {
+                console.error('Load transactions error:', error);
             });
         };
 
@@ -657,18 +691,22 @@
             }
         };
 
-        // Auth handler
+        // Enhanced auth handler
         onAuthStateChanged(auth, async user => {
             if (user) {
+                console.log('User authenticated:', user.uid);
                 currentUID = user.uid;
+                
+                // Initialize user data first, then load
                 await initUser(currentUID);
                 loadUserData(currentUID);
                 loadTransactions(currentUID);
                 
+                // Start market data updates
                 setInterval(() => updateMarketData(currentUID), 30000);
                 await updateMarketData(currentUID);
             } else {
-                // Redirect to login if not authenticated
+                console.log('No user authenticated, redirecting to login');
                 window.location.href = '/login.html';
             }
         });
