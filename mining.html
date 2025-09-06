@@ -94,34 +94,24 @@
         }
 
         .mining-animation {
-            width: 200px;
-            height: 150px;
+            width: 120px;
+            height: 120px;
             margin: 1rem auto;
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 50%;
+            background: #fff7ed;
         }
 
-        .mining-placeholder {
-            font-size: 4rem;
-            color: #ea580c;
+        .mining-icon {
+            font-size: 3rem;
             transition: transform 0.3s ease;
         }
 
-        .mining-placeholder.mining {
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-
-        .countdown {
-            font-size: 2rem;
-            font-weight: 600;
-            margin: 1rem 0;
-            color: #ea580c;
+        .mining-gif {
+            width: 80px;
+            height: 80px;
             display: none;
         }
 
@@ -150,6 +140,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-weight: 500;
+            margin: 0.5rem;
         }
 
         .btn:hover:not(:disabled) {
@@ -164,6 +155,14 @@
             transform: none;
         }
 
+        .btn-secondary {
+            background: #16a34a;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #15803d;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -176,6 +175,7 @@
             border: 1px solid #e5e5e5;
             border-radius: 8px;
             padding: 1.5rem;
+            position: relative;
         }
 
         .stat-card.mining-active {
@@ -198,7 +198,26 @@
             color: #000;
         }
 
-        .mining-progress {
+        .withdraw-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .withdraw-btn:disabled {
+            background: #e5e5e5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .progress-section {
             background: white;
             border: 1px solid #e5e5e5;
             border-radius: 12px;
@@ -207,10 +226,28 @@
             display: none;
         }
 
-        .mining-progress.active {
+        .progress-section.active {
             display: block;
             border-color: #16a34a;
             background: #f0fdf4;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .progress-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .countdown {
+            font-size: 0.9rem;
+            color: #ea580c;
+            font-weight: 500;
         }
 
         .progress-bar {
@@ -226,6 +263,19 @@
             height: 100%;
             background: linear-gradient(90deg, #16a34a, #22c55e);
             transition: width 0.3s ease;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .overall-progress {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e5e5;
         }
 
         .transactions {
@@ -303,14 +353,15 @@
             .header h1 {
                 font-size: 2rem;
             }
-            
-            .countdown {
-                font-size: 1.5rem;
-            }
 
             .auth-status {
                 position: relative;
                 margin: 0.5rem;
+            }
+
+            .progress-header {
+                flex-direction: column;
+                gap: 0.5rem;
             }
         }
     </style>
@@ -329,39 +380,60 @@
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card" id="balanceCard">
-                <div class="stat-title">Total Mined</div>
-                <div class="stat-value">$<span id="totalMined">0.00</span></div>
+            <div class="stat-card" id="totalEarnedCard">
+                <button class="withdraw-btn" id="withdrawBtn" onclick="withdrawEarnings()">Withdraw</button>
+                <div class="stat-title">Total Earned</div>
+                <div class="stat-value">$<span id="totalEarned">0.00</span></div>
             </div>
             <div class="stat-card" id="sessionsCard">
                 <div class="stat-title">Mining Sessions</div>
                 <div class="stat-value" id="sessions">0</div>
             </div>
-            <div class="stat-card" id="rateCard">
-                <div class="stat-title">Daily Income</div>
-                <div class="stat-value">$<span id="currentRate">0.00</span></div>
+            <div class="stat-card" id="pendingCard">
+                <div class="stat-title">Pending Rewards</div>
+                <div class="stat-value">$<span id="pendingEarned">0.00</span></div>
             </div>
-            <div class="stat-card" id="earnedCard">
-                <div class="stat-title">Pending Earned</div>
-                <div class="stat-value">$<span id="sessionEarned">0.00</span></div>
+            <div class="stat-card" id="levelCard">
+                <div class="stat-title">Mining Level</div>
+                <div class="stat-value" id="currentLevel">-</div>
             </div>
         </div>
 
-        <div class="mining-progress" id="miningProgress">
-            <h3>Mining Progress</h3>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-section" id="progressSection">
+            <div class="progress-header">
+                <div class="progress-title">Daily Mining Session</div>
+                <div class="countdown" id="sessionCountdown">00:00:00</div>
             </div>
-            <p id="progressText">0% complete</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="sessionProgress"></div>
+            </div>
+            <div class="progress-info">
+                <span id="sessionStatus">Ready</span>
+                <span id="sessionTime">0 / 4 hours</span>
+            </div>
+
+            <div class="overall-progress">
+                <div class="progress-header">
+                    <div class="progress-title">Overall Progress</div>
+                    <div class="countdown" id="overallCountdown">50 days left</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="overallProgress"></div>
+                </div>
+                <div class="progress-info">
+                    <span id="overallStatus">Day 0 / 50</span>
+                    <span id="overallEarned">$0.00 earned</span>
+                </div>
+            </div>
         </div>
 
         <div class="mining-section">
             <div class="mining-animation">
-                <div class="mining-placeholder" id="miningPlaceholder">⛏️</div>
+                <div class="mining-icon" id="miningIcon">⛏️</div>
+                <img src="mining.gif" alt="Mining" class="mining-gif" id="miningGif" onerror="this.style.display='none';">
             </div>
             
             <div class="mining-status" id="status">Ready to Mine</div>
-            <div class="countdown" id="countdown">50d 00h 00m</div>
             <button class="btn" id="miningBtn" onclick="toggleMining()">Start Mining</button>
         </div>
 
@@ -377,419 +449,393 @@
         </div>
     </div>
 
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-    import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-    import firebaseConfig from './firebaseConfig.js';
+    <script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import firebaseConfig from './firebaseConfig.js';
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-    const firestore = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        const firestore = getFirestore(app);
 
-    let isMining = false;
-    let payoutTimer = null;
-    let countdownTimer = null;
-    let currentUser = null;
-    let userData = { 
-        wallet: { usdBalance: 0 }, 
-        totalMined: 0, 
-        sessions: 0, 
-        level: null, 
-        miningState: null 
-    };
-    let LEVELS = {};
+        let currentUser = null;
+        let userData = { wallet: { usdBalance: 0 }, totalEarned: 0, sessions: 0, level: null, miningState: null };
+        let LEVELS = {};
+        let updateTimer = null;
+        let payoutTimer = null;
+        let isMining = false;
 
-    // Load levels from database
-    function loadLevels() {
-        const levelsRef = ref(database, 'levels');
-        onValue(levelsRef, (snapshot) => {
-            if (snapshot.exists()) {
-                LEVELS = snapshot.val();
+        const MINING_DURATION = 4 * 60 * 60 * 1000; // 4 hours
+        const TOTAL_DAYS = 50;
+        const DAY_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            const authStatus = document.getElementById('authStatus');
+            const btn = document.getElementById('miningBtn');
+            
+            if (user) {
+                authStatus.textContent = `✓ ${user.email}`;
+                authStatus.className = 'auth-status auth-authenticated';
+                btn.disabled = false;
+                loadUserData();
+                loadLevels();
             } else {
-                // Fallback levels if not in database
-                LEVELS = {
+                authStatus.textContent = '❌ Not Authenticated';
+                authStatus.className = 'auth-status auth-unauthenticated';
+                btn.disabled = true;
+                btn.textContent = 'Login Required';
+                resetDisplay();
+            }
+        });
+
+        function loadLevels() {
+            const levelsRef = ref(database, 'levels');
+            onValue(levelsRef, (snapshot) => {
+                LEVELS = snapshot.exists() ? snapshot.val() : {
                     1: { cost: 500, income: 20 },
                     2: { cost: 900, income: 36 },
                     3: { cost: 1500, income: 46 },
                     4: { cost: 45000, income: 180 }
                 };
-                set(ref(database, 'levels'), LEVELS);
-            }
-            updateDisplay();
-        });
-    }
-
-    onAuthStateChanged(auth, (user) => {
-        currentUser = user;
-        const authStatus = document.getElementById('authStatus');
-        const btn = document.getElementById('miningBtn');
-        
-        if (user) {
-            authStatus.textContent = `✓ ${user.email}`;
-            authStatus.className = 'auth-status auth-authenticated';
-            btn.disabled = false;
-            loadUserData();
-            loadLevels();
-        } else {
-            authStatus.textContent = '❌ Not Authenticated';
-            authStatus.className = 'auth-status auth-unauthenticated';
-            btn.disabled = true;
-            btn.textContent = 'Login Required';
-            resetDisplay();
+                updateDisplay();
+            });
         }
-    });
 
-    function loadUserData() {
-        const userRef = ref(database, `users/${currentUser.uid}`);
-        onValue(userRef, (snapshot) => {
-            if (snapshot.exists()) {
-                userData = { ...userData, ...snapshot.val() };
-                if (userData.miningState?.isActive && Date.now() < userData.miningState.endTime) {
-                    resumeMining();
-                } else if (userData.miningState?.isActive) {
-                    completeMining();
+        function loadUserData() {
+            const userRef = ref(database, `users/${currentUser.uid}`);
+            onValue(userRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    userData = { ...userData, ...snapshot.val() };
+                    if (userData.miningState?.isActive && Date.now() < userData.miningState.endTime) {
+                        resumeMining();
+                    } else if (userData.miningState?.isActive) {
+                        completeMining();
+                    }
+                } else {
+                    const newUserData = {
+                        profile: { email: currentUser.email, uid: currentUser.uid },
+                        wallet: { usdBalance: 0 },
+                        totalEarned: 0,
+                        sessions: 0,
+                        level: null
+                    };
+                    set(userRef, newUserData);
+                    userData = { ...userData, ...newUserData };
                 }
+                updateDisplay();
+            });
+            loadTransactions();
+        }
+
+        function loadTransactions() {
+            const txRef = collection(firestore, 'users', currentUser.uid, 'transactions');
+            onSnapshot(txRef, (snapshot) => {
+                const txs = snapshot.docs
+                    .map(doc => ({ ...doc.data(), id: doc.id }))
+                    .sort((a, b) => (b.timestamp?.toDate() || new Date(b.date)) - (a.timestamp?.toDate() || new Date(a.date)))
+                    .slice(0, 10);
+                updateTransactionList(txs);
+            });
+        }
+
+        function updateDisplay() {
+            const level = LEVELS[userData.level];
+            
+            document.getElementById('balance').textContent = (userData.wallet?.usdBalance || 0).toFixed(2);
+            document.getElementById('totalEarned').textContent = (userData.totalEarned || 0).toFixed(2);
+            document.getElementById('sessions').textContent = userData.sessions || 0;
+            document.getElementById('pendingEarned').textContent = (userData.miningState?.pendingEarned || 0).toFixed(2);
+            document.getElementById('currentLevel').textContent = userData.level || '-';
+            
+            // Update withdraw button
+            const withdrawBtn = document.getElementById('withdrawBtn');
+            const canWithdraw = (userData.totalEarned || 0) >= 500;
+            withdrawBtn.disabled = !canWithdraw;
+            withdrawBtn.textContent = canWithdraw ? 'Withdraw' : '$500 min';
+            
+            if (!level || !userData.level) {
+                document.getElementById('currentLevelText').textContent = 'Upgrade Plan Required';
+                document.getElementById('miningBtn').textContent = 'Upgrade Plan';
             } else {
-                // New user - create basic profile without level
-                const newUserData = {
-                    profile: { email: currentUser.email, uid: currentUser.uid },
-                    wallet: { usdBalance: 0 },
-                    totalMined: 0,
-                    sessions: 0,
-                    level: null
-                };
-                set(userRef, newUserData);
-                userData = { ...userData, ...newUserData };
+                document.getElementById('currentLevelText').textContent = `Level ${userData.level} - Cost: $${level.cost}`;
+                if (!isMining && !userData.miningState?.isActive) {
+                    document.getElementById('miningBtn').textContent = 'Start Mining';
+                }
             }
-            updateDisplay();
-        });
-        loadTransactions();
-    }
 
-    function loadTransactions() {
-        const txRef = collection(firestore, 'users', currentUser.uid, 'transactions');
-        onSnapshot(txRef, (snapshot) => {
-            const txs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }))
-                .sort((a, b) => (b.timestamp?.toDate() || new Date(b.date)) - (a.timestamp?.toDate() || new Date(a.date)))
-                .slice(0, 10);
-            updateTransactionList(txs);
-        });
-    }
-
-    function updateDisplay() {
-        const level = LEVELS[userData.level];
-        if (!level || !userData.level) {
-            document.getElementById('balance').textContent = userData.wallet?.usdBalance?.toFixed(2) || '0.00';
-            document.getElementById('totalMined').textContent = userData.totalMined?.toFixed(2) || '0.00';
-            document.getElementById('sessions').textContent = userData.sessions || '0';
-            document.getElementById('currentLevelText').textContent = 'Upgrade Plan Required';
-            document.getElementById('currentRate').textContent = '0.00';
-            document.getElementById('sessionEarned').textContent = '0.00';
-            document.getElementById('miningBtn').disabled = false;
-            document.getElementById('miningBtn').textContent = 'Upgrade Plan';
-            return;
+            updateMiningDisplay();
         }
 
-        document.getElementById('balance').textContent = userData.wallet.usdBalance.toFixed(2);
-        document.getElementById('totalMined').textContent = userData.totalMined.toFixed(2);
-        document.getElementById('sessions').textContent = userData.sessions;
-        document.getElementById('currentLevelText').textContent = `Level ${userData.level} - Cost: $${level.cost}`;
-        document.getElementById('currentRate').textContent = level.income.toFixed(2);
-        document.getElementById('sessionEarned').textContent = (userData.miningState?.pendingEarned || 0).toFixed(2);
-        
-        // Enable mining button if user has valid level
-        document.getElementById('miningBtn').disabled = false;
-        if (!isMining && !userData.miningState?.isActive) {
-            document.getElementById('miningBtn').textContent = 'Start Mining';
-        }
-        
-        // Update card states
-        const isActive = userData.miningState?.isActive;
-        ['balanceCard', 'sessionsCard', 'rateCard', 'earnedCard'].forEach(id => {
-            document.getElementById(id).classList.toggle('mining-active', isActive);
-        });
-        
-        // Update progress
-        const progress = document.getElementById('miningProgress');
-        if (isActive) {
-            progress.classList.add('active');
-            const elapsed = Date.now() - userData.miningState.startTime;
-            const total = userData.miningState.endTime - userData.miningState.startTime;
-            const pct = Math.min(100, (elapsed / total) * 100);
-            document.getElementById('progressFill').style.width = `${pct}%`;
-            document.getElementById('progressText').textContent = `${pct.toFixed(1)}% complete`;
-        } else {
-            progress.classList.remove('active');
-        }
-    }
+        function updateMiningDisplay() {
+            const progressSection = document.getElementById('progressSection');
+            const isActive = userData.miningState?.isActive;
+            
+            progressSection.classList.toggle('active', isActive);
+            
+            ['totalEarnedCard', 'sessionsCard', 'pendingCard', 'levelCard'].forEach(id => {
+                document.getElementById(id).classList.toggle('mining-active', isActive);
+            });
 
-    function updateTransactionList(txs = []) {
-        const list = document.getElementById('transactionList');
-        if (txs.length === 0) {
-            list.innerHTML = '<div class="empty-state"><p>No mining transactions yet. Start your first mining session!</p></div>';
-        } else {
-            list.innerHTML = txs.map(tx => `
-                <div class="transaction-item">
-                    <div class="transaction-info">
-                        <div class="transaction-type">${tx.type === 'cost' ? 'Mining Cost' : tx.type === 'payout' ? 'Mining Payout' : 'Mining Reward'}</div>
-                        <div class="transaction-date">${new Date(tx.timestamp?.toDate() || tx.date).toLocaleString()}</div>
+            if (!isActive) return;
+
+            const now = Date.now();
+            const { startTime, endTime, dailyMiningStart, dailyMiningActive } = userData.miningState;
+            
+            const daysSinceStart = Math.floor((now - startTime) / DAY_DURATION);
+            const currentDay = Math.min(TOTAL_DAYS, daysSinceStart + 1);
+            
+            if (dailyMiningActive && dailyMiningStart) {
+                const sessionElapsed = now - dailyMiningStart;
+                const sessionProgress = Math.min(100, (sessionElapsed / MINING_DURATION) * 100);
+                const sessionTimeLeft = Math.max(0, MINING_DURATION - sessionElapsed);
+                
+                document.getElementById('sessionProgress').style.width = `${sessionProgress}%`;
+                document.getElementById('sessionCountdown').textContent = formatTime(sessionTimeLeft);
+                document.getElementById('sessionStatus').textContent = 'Mining Active';
+                document.getElementById('sessionTime').textContent = `${Math.floor(sessionElapsed / (60 * 60 * 1000))} / 4 hours`;
+            } else {
+                document.getElementById('sessionProgress').style.width = '0%';
+                document.getElementById('sessionCountdown').textContent = 'Waiting';
+                document.getElementById('sessionStatus').textContent = 'Ready';
+                document.getElementById('sessionTime').textContent = '0 / 4 hours';
+            }
+            
+            const overallProgress = (currentDay / TOTAL_DAYS) * 100;
+            const timeLeft = Math.max(0, endTime - now);
+            
+            document.getElementById('overallProgress').style.width = `${overallProgress}%`;
+            document.getElementById('overallCountdown').textContent = formatTime(timeLeft);
+            document.getElementById('overallStatus').textContent = `Day ${currentDay} / ${TOTAL_DAYS}`;
+            document.getElementById('overallEarned').textContent = `$${(userData.miningState.pendingEarned || 0).toFixed(2)} earned`;
+        }
+
+        function updateTransactionList(txs = []) {
+            const list = document.getElementById('transactionList');
+            if (txs.length === 0) {
+                list.innerHTML = '<div class="empty-state"><p>No mining transactions yet. Start your first mining session!</p></div>';
+            } else {
+                list.innerHTML = txs.map(tx => `
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <div class="transaction-type">${getTransactionType(tx.type)}</div>
+                            <div class="transaction-date">${new Date(tx.timestamp?.toDate() || tx.date).toLocaleString()}</div>
+                        </div>
+                        <div class="transaction-amount ${tx.amount < 0 ? 'negative' : 'positive'}">
+                            ${tx.amount >= 0 ? '+' : ''}$${Math.abs(tx.amount).toFixed(2)}
+                        </div>
                     </div>
-                    <div class="transaction-amount ${tx.amount < 0 ? 'negative' : 'positive'}">
-                        ${tx.amount >= 0 ? '+' : ''}$${Math.abs(tx.amount).toFixed(2)}
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
         }
-    }
 
-    function resetDisplay() {
-        ['balance', 'totalMined', 'sessions', 'currentRate', 'sessionEarned'].forEach(id => 
-            document.getElementById(id).textContent = '0.00');
-        document.getElementById('currentLevelText').textContent = 'Current Level: -';
-        document.getElementById('transactionList').innerHTML = '<div class="empty-state"><p>Please authenticate to view mining data</p></div>';
-    }
+        function getTransactionType(type) {
+            const types = {
+                cost: 'Mining Cost',
+                payout: 'Mining Payout',
+                reward: 'Mining Reward',
+                complete: 'Mining Complete',
+                withdraw: 'Withdrawal'
+            };
+            return types[type] || 'Mining Transaction';
+        }
 
-    window.toggleMining = function() {
-        // If no level assigned, show upgrade message
-        if (!userData.level || !LEVELS[userData.level]) {
-            document.getElementById('status').textContent = 'Please upgrade your plan to start mining';
-            document.getElementById('status').className = 'mining-status';
-            return;
+        function resetDisplay() {
+            ['balance', 'totalEarned', 'pendingEarned'].forEach(id => 
+                document.getElementById(id).textContent = '0.00');
+            ['sessions', 'currentLevel'].forEach(id => 
+                document.getElementById(id).textContent = '0');
+            document.getElementById('currentLevelText').textContent = 'Current Level: -';
+            document.getElementById('withdrawBtn').disabled = true;
+            document.getElementById('transactionList').innerHTML = '<div class="empty-state"><p>Please authenticate to view mining data</p></div>';
         }
-        
-        if (isMining || userData.miningState?.isActive) {
-            stopMining();
-        } else {
-            startMining();
-        }
-    }
 
-    function startMining() {
-        if (!currentUser) {
-            document.getElementById('status').textContent = 'Please authenticate to start mining';
-            return;
+        window.toggleMining = function() {
+            if (!userData.level || !LEVELS[userData.level]) {
+                updateStatus('Please upgrade your plan to start mining');
+                return;
+            }
+            
+            if (isMining || userData.miningState?.isActive) {
+                stopMining();
+            } else {
+                startMining();
+            }
         }
-        
-        if (!userData.level) {
-            document.getElementById('status').textContent = 'Please upgrade your plan to start mining';
-            return;
-        }
-        
-        const level = LEVELS[userData.level];
-        if (!level) {
-            document.getElementById('status').textContent = 'Invalid level configuration';
-            return;
-        }
-        
-        if (userData.wallet.usdBalance < level.cost) {
-            document.getElementById('status').textContent = `Insufficient funds - Need $${level.cost}`;
-            return;
-        }
-        
-        const totalIncome = level.income * 50; // 50 days * 1 payout per day
-        const confirmMsg = `Start 50-Day Mining Plan?\n\nLevel: ${userData.level}\nCost: $${level.cost}\nDaily Income: $${level.income}\nTotal Income: $${totalIncome}\nMining: 4 hours per day for 50 days\nProfit: $${totalIncome - level.cost}`;
-        
-        if (!confirm(confirmMsg)) return;
-        
-        // Deduct cost
-        userData.wallet.usdBalance -= level.cost;
-        
-        // Set mining state
-        const now = Date.now();
-        userData.miningState = {
-            isActive: true,
-            level: userData.level,
-            startTime: now,
-            endTime: now + (50 * 24 * 60 * 60 * 1000), // 50 days total
-            lastPayout: 0, // Track last daily payout
-            pendingEarned: 0,
-            income: level.income,
-            dailyMiningStart: 0, // Track when daily 4-hour session started
-            dailyMiningActive: false, // Whether currently in 4-hour session
-            daysCompleted: 0
-        };
-        
-        saveUserData();
-        saveTransaction({ type: 'cost', amount: -level.cost, level: userData.level });
-        resumeMining();
-    }
 
-    function resumeMining() {
-        isMining = true;
-        document.getElementById('miningBtn').textContent = 'Stop Mining';
-        document.getElementById('miningPlaceholder').classList.add('mining');
-        document.getElementById('status').textContent = `Mining Active - Level ${userData.miningState.level}`;
-        document.getElementById('status').className = 'mining-status status-mining';
-        document.getElementById('countdown').style.display = 'block';
-        
-        countdownTimer = setInterval(updateMiningDisplay, 1000);
-        payoutTimer = setInterval(processPayout, 30000); // Check every 30 seconds
-    }
+        window.withdrawEarnings = function() {
+            if (!currentUser || (userData.totalEarned || 0) < 500) {
+                alert('Minimum withdrawal amount is $500');
+                return;
+            }
+            
+            const amount = userData.totalEarned;
+            if (confirm(`Withdraw $${amount.toFixed(2)} to your main balance?`)) {
+                userData.wallet.usdBalance += amount;
+                userData.totalEarned = 0;
+                saveUserData();
+                saveTransaction({ type: 'withdraw', amount: amount });
+                updateDisplay();
+            }
+        }
 
-    function stopMining() {
-        if (confirm('Are you sure you want to stop mining? All pending earnings will be lost!')) {
-            isMining = false;
-            clearInterval(payoutTimer);
-            clearInterval(countdownTimer);
-            userData.miningState = null;
+        function startMining() {
+            if (!currentUser || !userData.level) {
+                updateStatus('Authentication or level required');
+                return;
+            }
+            
+            const level = LEVELS[userData.level];
+            if (userData.wallet.usdBalance < level.cost) {
+                updateStatus(`Insufficient funds - Need $${level.cost}`);
+                return;
+            }
+            
+            const totalIncome = level.income * TOTAL_DAYS;
+            const confirmMsg = `Start ${TOTAL_DAYS}-Day Mining Plan?\n\nLevel: ${userData.level}\nCost: $${level.cost}\nTotal Income: $${totalIncome}\nProfit: $${totalIncome - level.cost}`;
+            
+            if (!confirm(confirmMsg)) return;
+            
+            userData.wallet.usdBalance -= level.cost;
+            userData.miningState = {
+                isActive: true,
+                level: userData.level,
+                startTime: Date.now(),
+                endTime: Date.now() + (TOTAL_DAYS * DAY_DURATION),
+                pendingEarned: 0,
+                income: level.income,
+                dailyMiningStart: 0,
+                dailyMiningActive: false,
+                daysCompleted: 0
+            };
+            
             saveUserData();
-            resetMiningDisplay();
+            saveTransaction({ type: 'cost', amount: -level.cost, level: userData.level });
+            resumeMining();
         }
-    }
 
-    function processPayout() {
-        if (!userData.miningState?.isActive) return;
-        
-        const now = Date.now();
-        
-        // Check if mining period is complete
-        if (now >= userData.miningState.endTime) {
-            completeMining();
-            return;
+        function resumeMining() {
+            isMining = true;
+            updateStatus(`Mining Active - Level ${userData.miningState.level}`, true);
+            document.getElementById('miningBtn').textContent = 'Stop Mining';
+            
+            document.getElementById('miningIcon').style.display = 'none';
+            document.getElementById('miningGif').style.display = 'block';
+            
+            updateTimer = setInterval(updateMiningDisplay, 1000);
+            payoutTimer = setInterval(processPayout, 30000);
         }
-        
-        // Calculate days since start
-        const daysSinceStart = Math.floor((now - userData.miningState.startTime) / (24 * 60 * 60 * 1000));
-        const currentDay = daysSinceStart + 1;
-        
-        // Check if we've completed all 50 days
-        if (currentDay > 50) {
-            completeMining();
-            return;
-        }
-        
-        // Get start of current day
-        const dayStart = userData.miningState.startTime + (daysSinceStart * 24 * 60 * 60 * 1000);
-        
-        // Check if daily mining session should start (if not already active)
-        if (!userData.miningState.dailyMiningActive) {
-            // Start daily 4-hour mining session
-            userData.miningState.dailyMiningActive = true;
-            userData.miningState.dailyMiningStart = now;
-            saveUserData();
-        }
-        
-        // Check if daily 4-hour session is complete
-        const fourHours = 4 * 60 * 60 * 1000;
-        const miningSessionElapsed = now - userData.miningState.dailyMiningStart;
-        
-        if (miningSessionElapsed >= fourHours && userData.miningState.dailyMiningActive) {
-            // Complete daily mining session
-            userData.miningState.dailyMiningActive = false;
-            userData.miningState.pendingEarned += userData.miningState.income;
-            userData.miningState.lastPayout = now;
-            userData.miningState.daysCompleted = currentDay;
-            saveUserData();
-            updateDisplay();
-        }
-    }
 
-    function updateMiningDisplay() {
-        if (!userData.miningState?.isActive) return;
-        
-        const now = Date.now();
-        const daysSinceStart = Math.floor((now - userData.miningState.startTime) / (24 * 60 * 60 * 1000));
-        const currentDay = Math.min(50, daysSinceStart + 1);
-        const daysLeft = 50 - currentDay;
-        
-        // Overall countdown
-        const timeLeft = Math.max(0, userData.miningState.endTime - now);
-        if (timeLeft <= 0) {
-            completeMining();
-            return;
+        function stopMining() {
+            if (confirm('Are you sure you want to stop mining? All progress will be lost!')) {
+                clearInterval(updateTimer);
+                clearInterval(payoutTimer);
+                userData.miningState = null;
+                saveUserData();
+                resetMiningUI();
+                updateStatus('Mining stopped');
+            }
         }
-        
-        const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
-        const hours = Math.floor((timeLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-        const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
-        
-        document.getElementById('countdown').textContent = `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m left`;
-        
-        // Daily mining session status
-        if (userData.miningState.dailyMiningActive) {
+
+        function processPayout() {
+            if (!userData.miningState?.isActive) return;
+            
+            const now = Date.now();
+            
+            if (now >= userData.miningState.endTime) {
+                completeMining();
+                return;
+            }
+            
+            if (!userData.miningState.dailyMiningActive) {
+                userData.miningState.dailyMiningActive = true;
+                userData.miningState.dailyMiningStart = now;
+                saveUserData();
+            }
+            
             const sessionElapsed = now - userData.miningState.dailyMiningStart;
-            const fourHours = 4 * 60 * 60 * 1000;
-            const sessionTimeLeft = Math.max(0, fourHours - sessionElapsed);
-            
-            const sessionHours = Math.floor(sessionTimeLeft / (60 * 60 * 1000));
-            const sessionMinutes = Math.floor((sessionTimeLeft % (60 * 60 * 1000)) / (60 * 1000));
-            const sessionSeconds = Math.floor((sessionTimeLeft % (60 * 1000)) / 1000);
-            
-            document.getElementById('status').textContent = `Day ${currentDay}/50 - Mining: ${sessionHours}h ${sessionMinutes}m ${sessionSeconds}s left`;
-        } else {
-            // Check if we can start next day's mining
-            const nextDayStart = userData.miningState.startTime + (currentDay * 24 * 60 * 60 * 1000);
-            if (now >= nextDayStart && currentDay <= 50) {
-                document.getElementById('status').textContent = `Day ${currentDay}/50 - Ready to start daily mining`;
-            } else {
-                const timeToNext = nextDayStart - now;
-                const nextHours = Math.floor(timeToNext / (60 * 60 * 1000));
-                const nextMinutes = Math.floor((timeToNext % (60 * 60 * 1000)) / (60 * 1000));
-                document.getElementById('status').textContent = `Day ${currentDay-1}/50 completed - Next in ${nextHours}h ${nextMinutes}m`;
+            if (sessionElapsed >= MINING_DURATION && userData.miningState.dailyMiningActive) {
+                userData.miningState.dailyMiningActive = false;
+                userData.miningState.pendingEarned += userData.miningState.income;
+                userData.miningState.daysCompleted++;
+                saveUserData();
+                updateDisplay();
             }
         }
-    }
 
-    function completeMining() {
-        // Transfer pending earnings to balance
-        if (userData.miningState?.pendingEarned > 0) {
-            userData.wallet.usdBalance += userData.miningState.pendingEarned;
-            userData.totalMined += userData.miningState.pendingEarned;
-            saveTransaction({ 
-                type: 'payout', 
-                amount: userData.miningState.pendingEarned, 
-                level: userData.miningState.level 
-            });
+        function completeMining() {
+            if (userData.miningState?.pendingEarned > 0) {
+                userData.totalEarned += userData.miningState.pendingEarned;
+                saveTransaction({ 
+                    type: 'complete', 
+                    amount: userData.miningState.pendingEarned, 
+                    level: userData.miningState.level 
+                });
+            }
+            
+            userData.miningState = null;
+            userData.sessions++;
+            saveUserData();
+            resetMiningUI();
+            updateStatus('Mining Complete! Earnings added to Total Earned.');
         }
-        
-        userData.miningState = null;
-        userData.sessions++;
-        saveUserData();
-        resetMiningDisplay();
-        
-        document.getElementById('status').textContent = 'Mining Complete!';
-        setTimeout(() => document.getElementById('status').textContent = 'Ready to Mine', 3000);
-    }
 
-    function resetMiningDisplay() {
-        isMining = false;
-        document.getElementById('miningBtn').textContent = 'Start Mining';
-        document.getElementById('miningPlaceholder').classList.remove('mining');
-        document.getElementById('status').textContent = 'Ready to Mine';
-        document.getElementById('status').className = 'mining-status';
-        document.getElementById('countdown').style.display = 'none';
-        clearInterval(payoutTimer);
-        clearInterval(countdownTimer);
-    }
-
-    async function saveUserData() {
-        if (!currentUser) return;
-        try {
-            await update(ref(database, `users/${currentUser.uid}`), { 
-                ...userData, 
-                lastUpdated: Date.now() 
-            });
-        } catch (e) { 
-            console.error('Save error:', e); 
+        function resetMiningUI() {
+            isMining = false;
+            clearInterval(updateTimer);
+            clearInterval(payoutTimer);
+            document.getElementById('miningBtn').textContent = 'Start Mining';
+            document.getElementById('miningIcon').style.display = 'block';
+            document.getElementById('miningGif').style.display = 'none';
+            updateStatus('Ready to Mine');
         }
-    }
 
-    async function saveTransaction(data) {
-        if (!currentUser) return;
-        try {
-            await addDoc(collection(firestore, 'users', currentUser.uid, 'transactions'), {
-                ...data,
-                timestamp: serverTimestamp(),
-                userId: currentUser.uid,
-                date: new Date().toLocaleString()
-            });
-        } catch (e) { 
-            console.error('Transaction error:', e); 
+        function updateStatus(message, isMining = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `mining-status ${isMining ? 'status-mining' : ''}`;
         }
-    }
-</script>
+
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes.toString().padStart(2, '0')}m`;
+            }
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        async function saveUserData() {
+            if (!currentUser) return;
+            try {
+                await update(ref(database, `users/${currentUser.uid}`), { 
+                    ...userData, 
+                    lastUpdated: Date.now() 
+                });
+            } catch (e) { 
+                console.error('Save error:', e); 
+            }
+        }
+
+        async function saveTransaction(data) {
+            if (!currentUser) return;
+            try {
+                await addDoc(collection(firestore, 'users', currentUser.uid, 'transactions'), {
+                    ...data,
+                    timestamp: serverTimestamp(),
+                    userId: currentUser.uid,
+                    date: new Date().toLocaleString()
+                });
+            } catch (e) { 
+                console.error('Transaction error:', e); 
+            }
+        }
+    </script>
 </body>
 </html>
