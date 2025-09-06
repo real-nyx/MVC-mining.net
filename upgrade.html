@@ -80,6 +80,7 @@
             font-size: 0.75rem;
             font-weight: 600;
             margin-top: 0.25rem;
+            display: none;
         }
 
         .balance {
@@ -144,6 +145,23 @@
         .card.countdown-active::before {
             content: "Cooldown Active";
             background: #f59e0b;
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .card img {
+            width: 60px;
+            height: 60px;
+            display: block;
+            margin: 0 auto 1rem auto;
+            border-radius: 50%;
         }
 
         .card h2 {
@@ -413,7 +431,7 @@
             <div>
                 <div>Welcome, <strong id="userName">User</strong></div>
                 <div class="current-level" id="currentLevelBadge">No Level</div>
-                <div class="countdown-info" id="countdownInfo" style="display: none;">Next upgrade: <span id="countdownTimer">--</span></div>
+                <div class="countdown-info" id="countdownInfo">Next upgrade: <span id="countdownTimer">--</span></div>
             </div>
             <div class="balance">Balance: $<span id="userBalance">0.00</span></div>
         </div>
@@ -483,13 +501,16 @@
         const database = getDatabase(app);
         const auth = getAuth(app);
 
+        // Global variables
         let currentUser = null;
-        let currentTransaction = null;
-        let userPendingTransactions = [];
         let userData = null;
         let LEVELS = {};
+        let userPendingTransactions = [];
         let countdownInterval = null;
-const elements = {
+        let currentTransaction = null;
+
+        // DOM elements
+        const elements = {
             loadingScreen: document.getElementById('loadingScreen'),
             mainApp: document.getElementById('mainApp'),
             authRequired: document.getElementById('authRequired'),
@@ -511,7 +532,7 @@ const elements = {
             pendingNotification: document.getElementById('pendingNotification'),
             pendingList: document.getElementById('pendingList')
         };
-
+// Auth state change
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
@@ -522,104 +543,26 @@ const elements = {
             }
         });
 
+        // Load levels from database
         function loadLevels() {
             const levelsRef = ref(database, 'levels');
             onValue(levelsRef, (snapshot) => {
-                LEVELS = snapshot.exists() ? snapshot.val() : {
-                    1: { cost: 500, income: 20 },
-                    2: { cost: 900, income: 36 },
-                    3: { cost: 1500, income: 46 },
-                    4: { cost: 45000, income: 180 }
-                };
-                if (!snapshot.exists()) set(ref(database, 'levels'), LEVELS);
+                if (snapshot.exists()) {
+                    LEVELS = snapshot.val();
+                } else {
+                    LEVELS = {
+                        1: { cost: 500, income: 20 },
+                        2: { cost: 900, income: 36 },
+                        3: { cost: 1500, income: 46 },
+                        4: { cost: 45000, income: 180 }
+                    };
+                    set(ref(database, 'levels'), LEVELS);
+                }
                 renderLevels();
             });
         }
 
-        function renderLevels() {
-            if (!LEVELS || !userData) return;
-
-            const currentUserLevel = userData.level ? parseInt(userData.level) : 0;
-            const lastUpgradeTime = userData.lastLevelUpgrade || 0;
-            const fiftyDaysMs = 50 * 24 * 60 * 60 * 1000;
-            const timeElapsed = Date.now() - lastUpgradeTime;
-            const canUpgrade = timeElapsed >= fiftyDaysMs;
-            const timeLeft = Math.max(0, fiftyDaysMs - timeElapsed);
-
-            let html = '';
-
-            // Show current level card if user has one
-            if (userData.level && LEVELS[userData.level]) {
-                const level = LEVELS[userData.level];
-                const isOnCooldown = !canUpgrade && lastUpgradeTime > 0;
-                
-                html += `
-                    <div class="card current-level">
-                        <h2>Level ${userData.level}</h2>
-                        <div class="info"><span>Daily Output:</span><span>$${level.income}</span></div>
-                        <div class="info"><span>50-Day Total:</span><span>$${level.income * 50}</span></div>
-                        <div class="info"><span>Status:</span><span class="price">Active</span></div>
-                        ${isOnCooldown ? `<div class="countdown-display" id="currentLevelCountdown">${formatTime(timeLeft)}</div>` : ''}
-                        <button class="buy-btn" disabled>Current Level</button>
-                    </div>
-                `;
-
-                // Update countdown in header
-                if (isOnCooldown) {
-                    elements.countdownInfo.style.display = 'block';
-                    startCountdown(timeLeft);
-                } else {
-                    elements.countdownInfo.style.display = 'none';
-                }
-            }
-
-            // Show ALL levels (user can purchase any level)
-            const allLevels = Object.entries(LEVELS)
-                .filter(([levelNum]) => parseInt(levelNum) !== currentUserLevel) // Exclude current level
-                .map(([levelNum, levelData]) => {
-                    const isDisabled = !canUpgrade && lastUpgradeTime > 0;
-                    return `
-                        <div class="card ${isDisabled ? 'countdown-active' : ''}">
-                            <h2>Level ${levelNum}</h2>
-                            <div class="info"><span>Daily Output:</span><span>$${levelData.income}</span></div>
-                            <div class="info"><span>50-Day Total:</span><span>$${levelData.income * 50}</span></div>
-                            <div class="info"><span>Price:</span><span class="price">$${levelData.cost.toLocaleString()}</span></div>
-                            <div class="info"><span>Profit:</span><span class="price">$${((levelData.income * 50) - levelData.cost).toLocaleString()}</span></div>
-                            ${isDisabled ? `<div class="countdown-display">${formatTime(timeLeft)}</div>` : ''}
-                            <button class="buy-btn" ${isDisabled ? 'disabled' : ''} 
-                                onclick="openTransaction('Level ${levelNum}', ${levelData.cost}, ${levelData.income}, ${levelNum})">
-                                ${isDisabled ? 'Cooldown Active' : 'Buy Level ' + levelNum}
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-
-            elements.upgradeContainer.innerHTML = html + allLevels;
-        }
-
-        function formatTime(ms) {
-            const days = Math.floor(ms / (24 * 60 * 60 * 1000));
-            const hours = Math.floor((ms % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-            return `${days}d ${hours}h`;
-        }
-
-        function startCountdown(timeLeft) {
-            if (countdownInterval) clearInterval(countdownInterval);
-            
-            countdownInterval = setInterval(() => {
-                timeLeft -= 1000;
-                if (timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    elements.countdownInfo.style.display = 'none';
-                    renderLevels();
-                } else {
-                    elements.countdownTimer.textContent = formatTime(timeLeft);
-                    const countdownEl = document.getElementById('currentLevelCountdown');
-                    if (countdownEl) countdownEl.textContent = formatTime(timeLeft);
-                }
-            }, 1000);
-        }
-
+        // Load user data
         function loadUserData() {
             if (!currentUser) return;
             
@@ -627,13 +570,23 @@ const elements = {
             onValue(userRef, (snapshot) => {
                 if (snapshot.exists()) {
                     userData = snapshot.val();
-                    updateUserDisplay();
                 } else {
-                    initializeUser();
+                    userData = {
+                        profile: { name: currentUser.displayName || currentUser.email.split('@')[0], email: currentUser.email },
+                        wallet: { usdBalance: 0 },
+                        totalMined: 0,
+                        sessions: 0,
+                        level: null,
+                        lastLevelUpgrade: 0
+                    };
+                    set(userRef, userData);
                 }
+                updateUserDisplay();
+                renderLevels();
                 showMainApp();
             });
 
+            // Load pending transactions
             const pendingRef = ref(database, 'pendingTransactions');
             onValue(pendingRef, (snapshot) => {
                 userPendingTransactions = [];
@@ -647,32 +600,118 @@ const elements = {
             });
         }
 
+        // Format time helper
+        function formatTime(ms) {
+            const days = Math.floor(ms / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((ms % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
+        }
+
+        // Start countdown
+        function startCountdown(timeLeft) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                timeLeft -= 1000;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    elements.countdownInfo.style.display = 'none';
+                    renderLevels();
+                } else {
+                    elements.countdownTimer.textContent = formatTime(timeLeft);
+                    const countdownElements = document.querySelectorAll('.countdown-display');
+                    countdownElements.forEach(el => el.textContent = formatTime(timeLeft));
+                }
+            }, 1000);
+        }
+
+        // Render levels
+        function renderLevels() {
+            if (!LEVELS || !userData) return;
+
+            const currentUserLevel = userData.level ? parseInt(userData.level) : 0;
+            const lastUpgradeTime = userData.lastLevelUpgrade || 0;
+            const fiftyDaysMs = 50 * 24 * 60 * 60 * 1000;
+            const timeElapsed = Date.now() - lastUpgradeTime;
+            const canUpgrade = timeElapsed >= fiftyDaysMs;
+            const timeLeft = Math.max(0, fiftyDaysMs - timeElapsed);
+            const isOnCooldown = !canUpgrade && lastUpgradeTime > 0;
+
+            // Update countdown in header
+            if (isOnCooldown) {
+                elements.countdownInfo.style.display = 'block';
+                startCountdown(timeLeft);
+            } else {
+                elements.countdownInfo.style.display = 'none';
+            }
+
+            // Render all levels
+            const html = Object.entries(LEVELS).map(([levelNum, levelData]) => {
+                const isCurrentLevel = parseInt(levelNum) === currentUserLevel;
+                const showCountdown = isOnCooldown && !isCurrentLevel;
+                
+                let buttonText = 'Buy Level ' + levelNum;
+                let buttonClass = 'buy-btn';
+                let cardClass = 'card';
+                let buttonDisabled = '';
+                
+                if (isCurrentLevel) {
+                    buttonText = 'Active';
+                    buttonDisabled = 'disabled';
+                    cardClass += ' current-level';
+                } else if (isOnCooldown) {
+                    buttonText = 'Cooldown ' + formatTime(timeLeft);
+                    buttonDisabled = 'disabled';
+                    cardClass += ' countdown-active';
+                }
+                
+                return `
+                    <div class="${cardClass}">
+                        <img src="bitcoin.jpg" alt="Bitcoin" onerror="this.style.display='none'">
+                        <h2>Level ${levelNum}</h2>
+                        <div class="info">
+                            <span>Daily Output:</span>
+                            <span>$${levelData.income}</span>
+                        </div>
+                        <div class="info">
+                            <span>50-Day Total:</span>
+                            <span>$${levelData.income * 50}</span>
+                        </div>
+                        <div class="info">
+                            <span>Price:</span>
+                            <span class="price">$${levelData.cost.toLocaleString()}</span>
+                        </div>
+                        <div class="info">
+                            <span>Profit:</span>
+                            <span class="price">$${((levelData.income * 50) - levelData.cost).toLocaleString()}</span>
+                        </div>
+                        ${showCountdown ? `<div class="countdown-display">${formatTime(timeLeft)}</div>` : ''}
+                        <button class="${buttonClass}" ${buttonDisabled} onclick="handleLevelClick(${levelNum}, '${levelData.cost}', '${levelData.income}', ${isCurrentLevel}, ${isOnCooldown})">
+                            ${buttonText}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            elements.upgradeContainer.innerHTML = html;
+        }
+
+        // Update user display
         function updateUserDisplay() {
             if (!userData) return;
-            elements.userName.textContent = userData.profile?.name || currentUser.email.split('@')[0] || 'User';
+            elements.userName.textContent = userData.profile?.name || 'User';
             elements.userBalance.textContent = (userData.wallet?.usdBalance || 0).toFixed(2);
             
-            if (userData.level && LEVELS[userData.level]) {
+            if (userData.level) {
                 elements.currentLevelBadge.textContent = `Level ${userData.level}`;
                 elements.currentLevelBadge.style.background = '#16a34a';
             } else {
                 elements.currentLevelBadge.textContent = 'No Level';
                 elements.currentLevelBadge.style.background = '#666';
             }
-            renderLevels();
         }
 
-        async function initializeUser() {
-            userData = {
-                profile: { name: currentUser.displayName || currentUser.email.split('@')[0], email: currentUser.email, uid: currentUser.uid },
-                wallet: { usdBalance: 0 },
-                totalMined: 0,
-                sessions: 0,
-                level: null
-            };
-            await set(ref(database, `users/${currentUser.uid}`), userData);
-        }
-
+        // Show screens
         function showAuthRequired() {
             elements.loadingScreen.style.display = 'none';
             elements.authRequired.style.display = 'flex';
@@ -683,19 +722,35 @@ const elements = {
             elements.mainApp.style.display = 'block';
         }
 
-        window.openTransaction = (levelName, price, dailyOutput, levelNum) => {
+        // Handle level click
+        window.handleLevelClick = function(levelNum, cost, income, isCurrentLevel, isOnCooldown) {
+            if (isCurrentLevel) return;
+            
+            if (isOnCooldown) {
+                elements.paymentError.textContent = 'You are on cooldown. Please wait for the countdown to finish.';
+                elements.paymentError.style.display = 'block';
+                setTimeout(() => elements.paymentError.style.display = 'none', 3000);
+                return;
+            }
+
             if (userPendingTransactions.length > 0) {
                 showPendingNotification();
                 return;
             }
 
+            openTransaction('Level ' + levelNum, parseInt(cost), parseInt(income), levelNum);
+        };
+
+        // Open transaction
+        function openTransaction(levelName, price, dailyOutput, levelNum) {
             currentTransaction = { levelName, price, dailyOutput, levelNum: parseInt(levelNum) };
             elements.selectedPackage.textContent = levelName;
             elements.selectedAmount.textContent = price.toLocaleString();
             elements.transactionModal.style.display = 'block';
-        };
+        }
 
-        window.closeTransaction = () => {
+        // Close transaction
+        window.closeTransaction = function() {
             elements.transactionModal.style.display = 'none';
             elements.pendingPayment.classList.remove('show');
             elements.paymentError.style.display = 'none';
@@ -703,16 +758,18 @@ const elements = {
             currentTransaction = null;
         };
 
-        window.closePendingNotification = () => {
+        // Close pending notification
+        window.closePendingNotification = function() {
             elements.pendingNotification.style.display = 'none';
         };
 
+        // Show pending notification
         function showPendingNotification() {
             const html = userPendingTransactions.map(tx => {
                 const date = tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : 'N/A';
                 return `
                     <div class="pending-item">
-                        <div><strong>${tx.levelName || `Level ${tx.levelNum}`}</strong><br><small>${date}</small></div>
+                        <div><strong>${tx.levelName || 'Level ' + tx.levelNum}</strong><br><small>${date}</small></div>
                         <div style="font-weight: 600; color: #16a34a;">$${tx.amount?.toLocaleString() || '0'}</div>
                     </div>
                 `;
@@ -721,6 +778,7 @@ const elements = {
             elements.pendingNotification.style.display = 'block';
         }
 
+        // Copy button
         elements.copyBtn.addEventListener('click', async () => {
             try {
                 await navigator.clipboard.writeText(elements.walletAddress.value);
@@ -732,11 +790,8 @@ const elements = {
             }
         });
 
-        window.showCooldownMessage = () => {
-            elements.paymentError.textContent = 'You are on cooldown. Please wait for the countdown to finish before purchasing another level.';
-            elements.paymentError.style.display = 'block';
-            setTimeout(() => elements.paymentError.style.display = 'none', 3000);
-        };
+        // Confirm payment
+        elements.confirmPayment.addEventListener('click', async () => {
             if (!currentTransaction) return;
 
             try {
@@ -762,7 +817,7 @@ const elements = {
                 elements.paymentSuccess.style.display = 'block';
                 elements.pendingPayment.classList.add('show');
                 
-                setTimeout(closeTransaction, 3000);
+                setTimeout(() => closeTransaction(), 3000);
 
             } catch (error) {
                 elements.paymentError.textContent = 'Failed to submit payment: ' + error.message;
