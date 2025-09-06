@@ -40,7 +40,6 @@
         .header h1 { font-size: 24px; margin-bottom: 4px; }
         .header p { opacity: 0.9; }
 
-        /* Modern Fixed Search Bar */
         .search-container {
             position: fixed;
             top: 0;
@@ -122,9 +121,7 @@
             transform: translateY(-1px);
         }
 
-        .content {
-            padding: 0 20px 20px;
-        }
+        .content { padding: 0 20px 20px; }
 
         .users-grid {
             display: grid;
@@ -158,6 +155,7 @@
             font-size: 16px;
             margin-bottom: 4px;
             font-weight: 600;
+            word-break: break-word;
         }
 
         .user-info p {
@@ -251,9 +249,7 @@
 
         .modal h3 { margin-bottom: 20px; font-weight: 600; }
 
-        .form-group {
-            margin-bottom: 16px;
-        }
+        .form-group { margin-bottom: 16px; }
 
         .form-group label {
             display: block;
@@ -285,24 +281,14 @@
             margin-top: 20px;
         }
 
-        .modal-actions .btn {
-            flex: 1;
-            padding: 12px;
-        }
+        .modal-actions .btn { flex: 1; padding: 12px; }
 
-        .btn-cancel {
-            background: #f3f4f6;
-            color: var(--gray);
-        }
-
-        .btn-cancel:hover {
-            background: #e5e7eb;
-        }
+        .btn-cancel { background: #f3f4f6; color: var(--gray); }
+        .btn-cancel:hover { background: #e5e7eb; }
 
         .loading { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             body { padding-top: calc(var(--search-height) + 10px); }
             .header { margin: 10px; }
@@ -320,7 +306,6 @@
         <p>Manage users and credit their accounts</p>
     </div>
 
-    <!-- Fixed Modern Search Bar -->
     <div class="search-container">
         <div class="search-content">
             <div class="search-wrapper">
@@ -339,13 +324,12 @@
         </div>
     </div>
 
-    <!-- Credit Modal -->
     <div id="creditModal" class="modal">
         <div class="modal-content">
             <h3>Credit User Account</h3>
             <div class="form-group">
-                <label>User Name</label>
-                <input type="text" id="creditUserName" readonly>
+                <label>User Email</label>
+                <input type="text" id="creditUserEmail" readonly>
             </div>
             <div class="form-group">
                 <label>Amount (USD)</label>
@@ -366,8 +350,10 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, onValue, update, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import firebaseConfig from './firebaseConfig.js';
-
+        
+        // Note: Replace with your Firebase config
+        const firebaseConfig = {};
+        
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
@@ -383,8 +369,8 @@
             if (!term) return users;
             return Object.fromEntries(
                 Object.entries(users).filter(([_, u]) => 
-                    (u.profile?.name || '').toLowerCase().includes(term.toLowerCase()) ||
-                    (u.profile?.email || '').toLowerCase().includes(term.toLowerCase())
+                    (u.profile?.email || '').toLowerCase().includes(term.toLowerCase()) ||
+                    (u.profile?.name || '').toLowerCase().includes(term.toLowerCase())
                 )
             );
         };
@@ -400,16 +386,19 @@
 
             grid.innerHTML = Object.entries(userList).map(([uid, u]) => {
                 const { profile = {}, wallet = {}, level = 1, totalMined = 0, sessions = 0 } = u;
-                const { name = 'No Name', email = 'No Email', joinDate = '' } = profile;
+                // Prioritize email display - get from profile or fallback to 'No Email'
+                const email = profile.email || 'No Email';
+                const displayName = email; // Use email as the main display name
                 const balance = wallet.usdBalance || 0;
+                const joinDate = profile.joinDate || '';
                 
                 return `
                     <div class="user-card">
                         <div class="user-header">
                             <div class="user-info">
-                                <h3>${name}</h3>
-                                <p>${email}</p>
-                                <p>Joined: ${formatDate(joinDate)}</p>
+                                <h3>${displayName}</h3>
+                                <p>User ID: ${uid.substring(0, 12)}...</p>
+                                <p>Joined: ${joinDate ? formatDate(joinDate) : 'Unknown'}</p>
                             </div>
                             <div class="user-status ${balance > 0 ? 'status-active' : 'status-inactive'}">
                                 Level ${level}
@@ -436,7 +425,7 @@
                         </div>
                         
                         <div class="user-actions">
-                            <button class="btn btn-success" onclick="openCreditModal('${uid}', '${name}')">
+                            <button class="btn btn-success" onclick="openCreditModal('${uid}', '${email.replace(/'/g, "\\'")}')">
                                 Credit Account
                             </button>
                         </div>
@@ -445,9 +434,9 @@
             }).join('');
         };
 
-        window.openCreditModal = (uid, name) => {
+        window.openCreditModal = (uid, email) => {
             creditUid = uid;
-            $('creditUserName').value = name;
+            $('creditUserEmail').value = email;
             $('creditAmount').value = '';
             $('creditReason').value = '';
             $('creditModal').style.display = 'block';
@@ -481,7 +470,8 @@
                     await update(userRef, { 'wallet/usdBalance': newBalance });
                     
                     if (reason) {
-                        await update(ref(db, `users/${creditUid}/transactions`), {
+                        const transactionRef = ref(db, `users/${creditUid}/transactions`);
+                        await update(transactionRef, {
                             [Date.now()]: {
                                 type: 'admin_credit',
                                 amount,
