@@ -116,12 +116,31 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             text-align: center;
+            position: relative;
         }
 
         .card:hover {
             transform: translateY(-8px);
             box-shadow: 0 8px 25px rgba(234, 88, 12, 0.15);
             border-color: #ea580c;
+        }
+
+        .card.current-level {
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .card.current-level::after {
+            content: "CURRENT LEVEL";
+            position: absolute;
+            top: -8px;
+            right: 12px;
+            background: #16a34a;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .card img {
@@ -178,9 +197,15 @@
             transition: all 0.2s ease;
         }
 
-        .buy-btn:hover {
+        .buy-btn:hover:not(:disabled) {
             background: #dc2626;
             transform: translateY(-1px);
+        }
+
+        .buy-btn:disabled {
+            background: #e5e5e5;
+            color: #999;
+            cursor: not-allowed;
         }
 
         .transaction {
@@ -359,24 +384,23 @@
             transition: all 0.2s ease;
         }
 
-        .error {
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
+        .error, .success {
             padding: 1rem;
             border-radius: 8px;
             margin: 1rem 0;
             display: none;
         }
 
+        .error {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
         .success {
             background: #dcfce7;
             border: 1px solid #bbf7d0;
             color: #16a34a;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            display: none;
         }
 
         .pending-notification {
@@ -438,6 +462,112 @@
             cursor: pointer;
             margin-top: 1rem;
         }
+
+        .process-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 1001;
+            padding: 1rem;
+        }
+
+        .process-content {
+            max-width: 450px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            position: relative;
+            text-align: center;
+        }
+
+        .process-content h3 {
+            color: #16a34a;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .checkmark {
+            background: #16a34a;
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .process-details {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #dcfce7;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #16a34a;
+        }
+
+        .process-message {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            text-align: left;
+        }
+
+        .process-message p {
+            margin: 0.5rem 0;
+            color: #374151;
+        }
+
+        .continue-btn {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.2s ease;
+        }
+
+        .continue-btn:hover {
+            background: #15803d;
+        }
+
+        @media (max-width: 768px) {
             .main-container {
                 padding: 0.5rem;
             }
@@ -460,15 +590,13 @@
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
+ <div class="loading-screen" id="loadingScreen">
         <div class="loading-card">
             <div class="spinner"></div>
             <p>Checking authentication...</p>
         </div>
     </div>
 
-    <!-- Main Application -->
     <div class="main-container" id="mainApp">
         <div class="user-info">
             <div>
@@ -483,108 +611,11 @@
             <p>Choose your mining level to start earning</p>
         </div>
 
-        <div class="upgrade-container">
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 1</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$20</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$500</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 1', 500, 20)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 2</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$36</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$900</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 2', 900, 36)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 3</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$60</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$1,500</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 3', 1500, 60)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 4</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$180</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$4,500</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 4', 4500, 180)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 5</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$400</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$10,000</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 5', 10000, 400)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 6</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$800</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$20,000</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 6', 20000, 800)">Buy Now</button>
-            </div>
-
-            <div class="card">
-                <img src="bitcoin.jpg" alt="Bitcoin">
-                <h2>Level - 7</h2>
-                <div class="info">
-                    <span>Daily Output:</span>
-                    <span>$1,000</span>
-                </div>
-                <div class="info">
-                    <span>Price:</span>
-                    <span class="price">$25,000</span>
-                </div>
-                <button class="buy-btn" onclick="openTransaction('Level 7', 25000, 1000)">Buy Now</button>
-            </div>
+        <div class="upgrade-container" id="upgradeContainer">
+            <!-- Level cards will be dynamically generated -->
         </div>
     </div>
 
-    <!-- Transaction Modal -->
     <div class="transaction" id="transactionModal">
         <div class="transaction-content">
             <button class="close-btn" onclick="closeTransaction()">×</button>
@@ -627,9 +658,7 @@
             <div class="success" id="paymentSuccess"></div>
 
             <div class="pending-payment" id="pendingPayment">
-                <div class="pending-header">
-                    Payment Submitted Successfully!
-                </div>
+                <div class="pending-header">Payment Submitted Successfully!</div>
                 <div class="pending-message">
                     <span>Your payment has been submitted for review</span>
                     <span><strong>Processing time:</strong> Your wallet will be funded within 24 hours</span>
@@ -639,29 +668,60 @@
         </div>
     </div>
 
-    <!-- Pending Notification Modal -->
     <div class="pending-notification" id="pendingNotification">
         <div class="pending-content">
             <button class="close-btn" onclick="closePendingNotification()">×</button>
-            
             <h3>⏳ Pending Transactions</h3>
-            
             <p style="color: #666; margin-bottom: 1rem;">
                 You have pending transactions that are awaiting admin approval. 
                 Please wait for approval before making new purchases.
             </p>
-            
             <div class="pending-list" id="pendingList"></div>
+            <button class="close-pending" onclick="closePendingNotification()">I Understand</button>
+        </div>
+    </div>
+
+    <div class="process-modal" id="processModal">
+        <div class="process-content">
+            <button class="close-btn" onclick="closeProcessModal()">×</button>
             
-            <button class="close-pending" onclick="closePendingNotification()">
-                I Understand
-            </button>
+            <h3>
+                <div class="checkmark">✓</div>
+                Level Upgraded Successfully!
+            </h3>
+            
+            <div class="process-details">
+                <div class="detail-row">
+                    <span class="detail-label">New Level:</span>
+                    <span class="detail-value" id="processLevel">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Daily Income:</span>
+                    <span class="detail-value">$<span id="processDailyIncome">0</span></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Total Investment:</span>
+                    <span class="detail-value">$<span id="processInvestment">0</span></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">Active</span>
+                </div>
+            </div>
+
+            <div class="process-message">
+                <p><strong>Congratulations!</strong> Your mining level has been successfully upgraded.</p>
+                <p>You can now start mining with your new level. Head to the mining dashboard to begin earning.</p>
+                <p><strong>Note:</strong> Your new daily income rate will be applied to all future mining sessions.</p>
+            </div>
+
+            <button class="continue-btn" onclick="goToMining()">Start Mining Now</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue, push, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, onValue, push, serverTimestamp, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import firebaseConfig from './firebaseConfig.js';
         
@@ -672,59 +732,111 @@
         let currentUser = null;
         let currentTransaction = null;
         let userPendingTransactions = [];
+        let userData = null;
+        let levels = {};
+        let processedTransactions = new Set();
 
-        const loadingScreen = document.getElementById('loadingScreen');
-        const mainApp = document.getElementById('mainApp');
-        const userName = document.getElementById('userName');
-        const userBalance = document.getElementById('userBalance');
-        const transactionModal = document.getElementById('transactionModal');
-        const selectedPackage = document.getElementById('selectedPackage');
-        const selectedAmount = document.getElementById('selectedAmount');
-        const confirmPayment = document.getElementById('confirmPayment');
-        const pendingPayment = document.getElementById('pendingPayment');
-        const paymentError = document.getElementById('paymentError');
-        const paymentSuccess = document.getElementById('paymentSuccess');
-        const copyBtn = document.getElementById('copyBtn');
-        const walletAddress = document.getElementById('walletAddress');
-        const pendingNotification = document.getElementById('pendingNotification');
-        const pendingList = document.getElementById('pendingList');
+        const elements = {
+            loadingScreen: document.getElementById('loadingScreen'),
+            mainApp: document.getElementById('mainApp'),
+            userName: document.getElementById('userName'),
+            userBalance: document.getElementById('userBalance'),
+            upgradeContainer: document.getElementById('upgradeContainer'),
+            transactionModal: document.getElementById('transactionModal'),
+            selectedPackage: document.getElementById('selectedPackage'),
+            selectedAmount: document.getElementById('selectedAmount'),
+            confirmPayment: document.getElementById('confirmPayment'),
+            pendingPayment: document.getElementById('pendingPayment'),
+            paymentError: document.getElementById('paymentError'),
+            paymentSuccess: document.getElementById('paymentSuccess'),
+            copyBtn: document.getElementById('copyBtn'),
+            walletAddress: document.getElementById('walletAddress'),
+            pendingNotification: document.getElementById('pendingNotification'),
+            pendingList: document.getElementById('pendingList'),
+            processModal: document.getElementById('processModal'),
+            processLevel: document.getElementById('processLevel'),
+            processDailyIncome: document.getElementById('processDailyIncome'),
+            processInvestment: document.getElementById('processInvestment')
+        };
+
+        // Level configurations
+        const levelConfigs = {
+            1: { cost: 500, income: 20 },
+            2: { cost: 900, income: 36 },
+            3: { cost: 1500, income: 60 },
+            4: { cost: 4500, income: 180 },
+            5: { cost: 10000, income: 400 },
+            6: { cost: 20000, income: 800 },
+            7: { cost: 25000, income: 1000 }
+        };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                loadUserData();
-                showMainApp();
+                initializeData();
             } else {
                 window.location.href = '/login.html';
             }
         });
 
-        function showMainApp() {
-            loadingScreen.style.display = 'none';
-            mainApp.style.display = 'block';
+        async function initializeData() {
+            await Promise.all([
+                loadUserData(),
+                loadLevels(),
+                loadPendingTransactions()
+            ]);
+            showMainApp();
+            renderLevelCards();
         }
 
-        function showMessage(element, message, isError = false) {
-            element.textContent = message;
-            element.style.display = 'block';
-            setTimeout(() => element.style.display = 'none', 5000);
+        function showMainApp() {
+            elements.loadingScreen.style.display = 'none';
+            elements.mainApp.style.display = 'block';
         }
 
         function loadUserData() {
-            if (!currentUser) return;
-            
-            const userRef = ref(database, `users/${currentUser.uid}`);
-            onValue(userRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    userName.textContent = userData.profile?.name || 'User';
-                    userBalance.textContent = (userData.wallet?.usdBalance || 0).toFixed(2);
-                } else {
-                    initializeUser();
-                }
+            return new Promise((resolve) => {
+                const userRef = ref(database, `users/${currentUser.uid}`);
+                onValue(userRef, async (snapshot) => {
+                    if (snapshot.exists()) {
+                        userData = snapshot.val();
+                    } else {
+                        userData = await createNewUser();
+                    }
+                    updateUserDisplay();
+                    resolve();
+                });
             });
+        }
 
-            // Check for pending transactions
+        async function createNewUser() {
+            const newUserData = {
+                profile: {
+                    name: currentUser.name,
+                    email: currentUser.email,
+                    joinDate: serverTimestamp(),
+                    uid: currentUser.uid
+                },
+                wallet: { usdBalance: 0 },
+                totalMined: 0,
+                level: null
+            };
+
+            await set(ref(database, `users/${currentUser.uid}`), newUserData);
+            return newUserData;
+        }
+
+        function loadLevels() {
+            return new Promise((resolve) => {
+                const levelsRef = ref(database, 'levels');
+                onValue(levelsRef, (snapshot) => {
+                    levels = snapshot.exists() ? snapshot.val() : levelConfigs;
+                    resolve();
+                });
+            });
+        }
+
+        function loadPendingTransactions() {
             const pendingRef = ref(database, 'pendingTransactions');
             onValue(pendingRef, (snapshot) => {
                 userPendingTransactions = [];
@@ -738,37 +850,70 @@
             });
         }
 
-        async function initializeUser() {
-            const userData = {
-                profile: {
-                    name: "Crypto Trader",
-                    email: currentUser.email,
-                    joinDate: serverTimestamp(),
-                    uid: currentUser.uid
-                },
-                wallet: { usdBalance: 0 },
-                totalMined: 0,
-                level: "1"
-            };
+        function updateUserDisplay() {
+            elements.userName.textContent = userData?.profile?.name || 'User';
+            elements.userBalance.textContent = (userData?.wallet?.usdBalance || 0).toFixed(2);
+        }
 
-            await set(ref(database, `users/${currentUser.uid}`), userData);
+        function renderLevelCards() {
+            const container = elements.upgradeContainer;
+            container.innerHTML = '';
+
+            Object.entries(levels).forEach(([levelNum, config]) => {
+                const isCurrentLevel = userData?.level == levelNum;
+                const card = document.createElement('div');
+                card.className = `card ${isCurrentLevel ? 'current-level' : ''}`;
+                
+                card.innerHTML = `
+                    <img src="bitcoin.jpg" alt="Bitcoin">
+                    <h2>Level ${levelNum}</h2>
+                    <div class="info">
+                        <span>Daily Output:</span>
+                        <span>$${config.income}</span>
+                    </div>
+                    <div class="info">
+                        <span>Price:</span>
+                        <span class="price">$${config.cost.toLocaleString()}</span>
+                    </div>
+                    <button class="buy-btn" ${isCurrentLevel ? 'disabled' : ''} onclick="openTransaction('Level ${levelNum}', ${config.cost}, ${config.income})">
+                        ${isCurrentLevel ? 'Current Level' : 'Buy Now'}
+                    </button>
+                `;
+                
+                container.appendChild(card);
+            });
         }
 
         window.openTransaction = (level, price, dailyOutput) => {
-            // Check for pending transactions first
             if (userPendingTransactions.length > 0) {
                 showPendingNotification();
                 return;
             }
 
             currentTransaction = { level, price, dailyOutput, timestamp: Date.now() };
-            selectedPackage.textContent = level;
-            selectedAmount.textContent = price;
-            transactionModal.style.display = 'block';
+            elements.selectedPackage.textContent = level;
+            elements.selectedAmount.textContent = price.toLocaleString();
+            elements.transactionModal.style.display = 'block';
+        };
+
+        window.closeTransaction = () => {
+            elements.transactionModal.style.display = 'none';
+            elements.pendingPayment.classList.remove('show');
+            elements.paymentError.style.display = 'none';
+            elements.paymentSuccess.style.display = 'none';
+            currentTransaction = null;
         };
 
         window.closePendingNotification = () => {
-            pendingNotification.style.display = 'none';
+            elements.pendingNotification.style.display = 'none';
+        };
+
+        window.closeProcessModal = () => {
+            elements.processModal.style.display = 'none';
+        };
+
+        window.goToMining = () => {
+            window.location.href = 'mining.html';
         };
 
         function showPendingNotification() {
@@ -781,48 +926,58 @@
                             <small style="color: #666;">${date}</small>
                         </div>
                         <div>
-                            <span style="font-weight: 600; color: #16a34a;">$${tx.amount}</span>
+                            <span style="font-weight: 600; color: #16a34a;">$${tx.amount.toLocaleString()}</span>
                         </div>
                     </div>
                 `;
             }).join('');
 
-            pendingList.innerHTML = pendingHtml;
-            pendingNotification.style.display = 'block';
+            elements.pendingList.innerHTML = pendingHtml;
+            elements.pendingNotification.style.display = 'block';
         }
 
-        window.closeTransaction = () => {
-            transactionModal.style.display = 'none';
-            pendingPayment.classList.remove('show');
-            paymentError.style.display = 'none';
-            paymentSuccess.style.display = 'none';
-            currentTransaction = null;
-        };
+        function showMessage(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+            setTimeout(() => element.style.display = 'none', 5000);
+        }
 
-        transactionModal.addEventListener('click', (e) => {
-            if (e.target === transactionModal) closeTransaction();
+        function showProcessModal(transactionData) {
+            const levelNum = transactionData.levelNumber;
+            const levelConfig = levels[levelNum] || levelConfigs[levelNum];
+            
+            elements.processLevel.textContent = `Level ${levelNum}`;
+            elements.processDailyIncome.textContent = levelConfig.income;
+            elements.processInvestment.textContent = transactionData.amount.toLocaleString();
+            
+            elements.processModal.style.display = 'block';
+        }
+
+        // Event Listeners
+        elements.transactionModal.addEventListener('click', (e) => {
+            if (e.target === elements.transactionModal) closeTransaction();
         });
 
-        copyBtn.addEventListener('click', async () => {
+        elements.copyBtn.addEventListener('click', async () => {
             try {
-                await navigator.clipboard.writeText(walletAddress.value);
-                copyBtn.textContent = 'Copied!';
-                copyBtn.style.background = '#16a34a';
+                await navigator.clipboard.writeText(elements.walletAddress.value);
+                elements.copyBtn.textContent = 'Copied!';
+                elements.copyBtn.style.background = '#16a34a';
                 setTimeout(() => {
-                    copyBtn.textContent = 'Copy Address';
-                    copyBtn.style.background = '#3b82f6';
+                    elements.copyBtn.textContent = 'Copy Address';
+                    elements.copyBtn.style.background = '#3b82f6';
                 }, 2000);
             } catch (err) {
-                showMessage(paymentError, 'Failed to copy address', true);
+                showMessage(elements.paymentError, 'Failed to copy address');
             }
         });
 
-        confirmPayment.addEventListener('click', async () => {
+        elements.confirmPayment.addEventListener('click', async () => {
             if (!currentTransaction) return;
 
             try {
-                confirmPayment.disabled = true;
-                confirmPayment.textContent = 'Processing...';
+                elements.confirmPayment.disabled = true;
+                elements.confirmPayment.textContent = 'Processing...';
 
                 const transactionData = {
                     userId: currentUser.uid,
@@ -832,22 +987,54 @@
                     dailyOutput: currentTransaction.dailyOutput,
                     status: 'pending',
                     createdAt: serverTimestamp(),
-                    walletAddress: walletAddress.value
+                    walletAddress: elements.walletAddress.value,
+                    levelNumber: parseInt(currentTransaction.level.replace('Level ', ''))
                 };
 
                 await push(ref(database, 'pendingTransactions'), transactionData);
                 
-                showMessage(paymentSuccess, 'Payment submitted successfully!');
-                pendingPayment.classList.add('show');
+                showMessage(elements.paymentSuccess, 'Payment submitted successfully!');
+                elements.pendingPayment.classList.add('show');
                 
                 setTimeout(closeTransaction, 3000);
 
             } catch (error) {
-                showMessage(paymentError, 'Failed to submit payment: ' + error.message, true);
+                showMessage(elements.paymentError, 'Failed to submit payment: ' + error.message);
             } finally {
-                confirmPayment.disabled = false;
-                confirmPayment.textContent = 'I have made the payment';
+                elements.confirmPayment.disabled = false;
+                elements.confirmPayment.textContent = 'I have made the payment';
             }
+        });
+
+        // Listen for approved transactions to update user level
+        const pendingRef = ref(database, 'pendingTransactions');
+        onValue(pendingRef, (snapshot) => {
+            if (snapshot.exists()) {
+                Object.entries(snapshot.val()).forEach(([id, data]) => {
+                    if (data.userId === currentUser.uid && data.status === 'approved' && data.levelNumber && !processedTransactions.has(id)) {
+                        // Add to processed set to prevent duplicate processing
+                        processedTransactions.add(id);
+                        
+                        // Update user level
+                        update(ref(database, `users/${currentUser.uid}`), {
+                            level: data.levelNumber
+                        }).then(() => {
+                            // Show process modal
+                            showProcessModal(data);
+                            
+                            // Mark transaction as processed
+                            update(ref(database, `pendingTransactions/${id}`), {
+                                status: 'processed'
+                            });
+                        });
+                    }
+                });
+            }
+        });
+
+        // Close modals on outside click
+        elements.processModal.addEventListener('click', (e) => {
+            if (e.target === elements.processModal) closeProcessModal();
         });
 
         document.addEventListener('keydown', (e) => {
