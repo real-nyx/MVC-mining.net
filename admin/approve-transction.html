@@ -5,40 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VeChain Mining - Admin Panel</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #f8fafc;
             color: #171717;
             line-height: 1.6;
         }
 
-        .loading-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        .loading, .container { 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        
+        .loading {
             background: linear-gradient(135deg, #ea580c, #dc2626);
         }
-
+        
         .loading-card {
             background: white;
             padding: 2rem;
             border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .container {
+            display: none;
+            flex-direction: column;
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
-            display: none;
+            height: auto;
+            min-height: 100vh;
         }
 
         .header {
@@ -65,10 +67,7 @@
             font-size: 0.9rem;
         }
 
-        .stat {
-            text-align: center;
-        }
-
+        .stat { text-align: center; }
         .stat-number {
             display: block;
             font-size: 1.5rem;
@@ -96,7 +95,7 @@
             cursor: pointer;
             font-weight: 500;
             color: #666;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
         }
 
         .tab-btn.active {
@@ -104,17 +103,9 @@
             border-bottom: 2px solid #ea580c;
         }
 
-        .tab-content {
-            padding: 1.5rem;
-        }
-
-        .tab-panel {
-            display: none;
-        }
-
-        .tab-panel.active {
-            display: block;
-        }
+        .tab-content { padding: 1.5rem; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
 
         .transaction-card {
             background: white;
@@ -134,15 +125,8 @@
             border-bottom: 1px solid #f5f5f5;
         }
 
-        .user-info {
-            font-weight: 600;
-            color: #171717;
-        }
-
-        .transaction-date {
-            color: #666;
-            font-size: 0.85rem;
-        }
+        .user-info { font-weight: 600; color: #171717; }
+        .transaction-date { color: #666; font-size: 0.85rem; }
 
         .transaction-details {
             display: grid;
@@ -151,10 +135,7 @@
             margin-bottom: 1rem;
         }
 
-        .detail {
-            text-align: center;
-        }
-
+        .detail { text-align: center; }
         .detail-label {
             display: block;
             color: #666;
@@ -162,15 +143,8 @@
             margin-bottom: 0.25rem;
         }
 
-        .detail-value {
-            font-weight: 600;
-            color: #171717;
-        }
-
-        .amount {
-            color: #16a34a;
-            font-size: 1.1rem;
-        }
+        .detail-value { font-weight: 600; color: #171717; }
+        .amount { color: #16a34a; font-size: 1.1rem; }
 
         .status {
             padding: 0.25rem 0.75rem;
@@ -209,7 +183,7 @@
             border-radius: 6px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             font-size: 0.85rem;
         }
 
@@ -218,34 +192,19 @@
             color: white;
         }
 
-        .btn-approve:hover {
-            background: #15803d;
-        }
+        .btn-approve:hover { background: #15803d; }
 
         .btn-reject {
             background: #dc2626;
             color: white;
         }
 
-        .btn-reject:hover {
-            background: #b91c1c;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn-reject:hover { background: #b91c1c; }
 
         .empty-state {
             text-align: center;
             padding: 3rem 1rem;
             color: #666;
-        }
-
-        .empty-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
         }
 
         .spinner {
@@ -264,58 +223,40 @@
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .stats {
-                gap: 1rem;
-            }
-
-            .transaction-details {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .tab-buttons {
-                flex-direction: column;
-            }
+            .container { padding: 1rem; }
+            .header { flex-direction: column; gap: 1rem; }
+            .stats { gap: 1rem; }
+            .transaction-details { grid-template-columns: 1fr 1fr; }
+            .action-buttons { flex-direction: column; }
+            .tab-buttons { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-    <div class="loading-screen" id="loadingScreen">
+    <div class="loading" id="loading">
         <div class="loading-card">
             <div class="spinner"></div>
-            <p>Checking admin access...</p>
+            <p>Loading admin panel...</p>
         </div>
     </div>
 
-    <div class="container" id="adminPanel">
+    <div class="container" id="admin">
         <div class="header">
             <div>
-                <h1>🔧 Admin Panel</h1>
+                <h1>Admin Panel</h1>
                 <p style="color: #666; margin-top: 0.5rem;">Manage VeChain Mining Transactions</p>
             </div>
             <div class="stats">
                 <div class="stat">
-                    <span class="stat-number" id="pendingCount">0</span>
+                    <span class="stat-number" id="pending">0</span>
                     <span>Pending</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number" id="approvedCount">0</span>
+                    <span class="stat-number" id="approved">0</span>
                     <span>Approved</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number" id="totalValue">$0</span>
+                    <span class="stat-number" id="total">$0</span>
                     <span>Total Value</span>
                 </div>
             </div>
@@ -323,22 +264,20 @@
 
         <div class="tabs">
             <div class="tab-buttons">
-                <button class="tab-btn active" data-tab="pending">Pending Transactions</button>
-                <button class="tab-btn" data-tab="approved">Approved Transactions</button>
-                <button class="tab-btn" data-tab="rejected">Rejected Transactions</button>
+                <button class="tab-btn active" onclick="switchTab('pending')">Pending</button>
+                <button class="tab-btn" onclick="switchTab('approved')">Approved</button>
+                <button class="tab-btn" onclick="switchTab('rejected')">Rejected</button>
             </div>
 
             <div class="tab-content">
-                <div class="tab-panel active" id="pending">
-                    <div id="pendingTransactions"></div>
+                <div class="tab-panel active" id="pending-panel">
+                    <div id="pending-list"></div>
                 </div>
-
-                <div class="tab-panel" id="approved">
-                    <div id="approvedTransactions"></div>
+                <div class="tab-panel" id="approved-panel">
+                    <div id="approved-list"></div>
                 </div>
-
-                <div class="tab-panel" id="rejected">
-                    <div id="rejectedTransactions"></div>
+                <div class="tab-panel" id="rejected-panel">
+                    <div id="rejected-list"></div>
                 </div>
             </div>
         </div>
@@ -361,96 +300,82 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+        const db = getDatabase(app);
         const auth = getAuth(app);
 
-        let currentAdmin = null;
+        let currentUser = null;
         let transactions = { pending: [], approved: [], rejected: [] };
 
-        const loadingScreen = document.getElementById('loadingScreen');
-        const adminPanel = document.getElementById('adminPanel');
+        // DOM elements
+        const loading = document.getElementById('loading');
+        const admin = document.getElementById('admin');
+        const pendingCount = document.getElementById('pending');
+        const approvedCount = document.getElementById('approved');
+        const totalValue = document.getElementById('total');
 
-        // Check admin authentication
-        onAuthStateChanged(auth, async (user) => {
+        // Authentication
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                try {
-                    const userRef = ref(database, `users/${user.uid}`);
-                    const userSnapshot = await new Promise(resolve => {
-                        onValue(userRef, resolve, { onlyOnce: true });
-                    });
-                    
-                    if (userSnapshot.exists()) {
-                        const userData = userSnapshot.val();
-                        
-                        // Check if user has admin role
-                        if (userData.role === 'admin') {
-                            currentAdmin = user;
-                            showAdminPanel();
-                            setupTransactionListener();
-                        } else {
-                            alert('Access denied. Admin privileges required.');
-                            window.location.href = '/login.html';
-                        }
-                    } else {
-                        alert('User data not found.');
-                        window.location.href = '/login.html';
-                    }
-                } catch (error) {
-                    console.error('Error checking admin access:', error);
-                    alert('Error verifying admin access.');
-                    window.location.href = '/login.html';
-                }
+                currentUser = user;
+                init();
             } else {
-                window.location.href = '/admin-login.html';
+                window.location.href = '/';
             }
         });
 
-        function showAdminPanel() {
-            loadingScreen.style.display = 'none';
-            adminPanel.style.display = 'block';
+        function init() {
+            loading.style.display = 'none';
+            admin.style.display = 'flex';
+            setupListener();
         }
 
-        // Tab functionality
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tab = btn.dataset.tab;
-                
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                document.getElementById(tab).classList.add('active');
-                
-                loadTransactionsByStatus(tab);
-            });
-        });
-
-        // Setup real-time transaction listener
-        function setupTransactionListener() {
-            const transactionsRef = ref(database, 'pendingTransactions');
-            onValue(transactionsRef, (snapshot) => {
+        // Transaction listener
+        function setupListener() {
+            const txRef = ref(db, 'pendingTransactions');
+            onValue(txRef, (snapshot) => {
                 transactions = { pending: [], approved: [], rejected: [] };
                 
                 if (snapshot.exists()) {
                     Object.entries(snapshot.val()).forEach(([id, data]) => {
-                        const tx = { id, ...data };
-                        transactions[tx.status].push(tx);
+                        transactions[data.status].push({ id, ...data });
                     });
                 }
 
                 updateStats();
-                loadTransactionsByStatus('pending');
+                loadTransactions('pending');
             });
         }
 
-        // Load transactions by status
-        function loadTransactionsByStatus(status) {
-            const container = document.getElementById(`${status}Transactions`);
+        // Update statistics
+        function updateStats() {
+            pendingCount.textContent = transactions.pending.length;
+            approvedCount.textContent = transactions.approved.length;
             
-            if (transactions[status].length === 0) {
+            const total = transactions.approved.reduce((sum, tx) => sum + tx.amount, 0);
+            totalValue.textContent = `$${total.toLocaleString()}`;
+        }
+
+        // Tab switching
+        window.switchTab = (status) => {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update panels
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(`${status}-panel`).classList.add('active');
+            
+            loadTransactions(status);
+        };
+
+        // Load transactions by status
+        function loadTransactions(status) {
+            const container = document.getElementById(`${status}-list`);
+            
+            if (!transactions[status] || transactions[status].length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-icon">📭</div>
+                        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">📭</div>
                         <h3>No ${status} transactions</h3>
                         <p>All transactions are up to date</p>
                     </div>
@@ -460,17 +385,17 @@
 
             container.innerHTML = transactions[status]
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                .map(tx => createTransactionCard(tx, status))
+                .map(tx => createCard(tx, status))
                 .join('');
         }
 
-        // Create transaction card HTML
-        function createTransactionCard(tx, status) {
+        // Create transaction card
+        function createCard(tx, status) {
             const date = tx.createdAt ? new Date(tx.createdAt).toLocaleString() : 'N/A';
-            const actionButtons = status === 'pending' ? `
+            const actions = status === 'pending' ? `
                 <div class="action-buttons">
-                    <button class="btn btn-approve" onclick="approveTransaction('${tx.id}')">Approve</button>
-                    <button class="btn btn-reject" onclick="rejectTransaction('${tx.id}')">Reject</button>
+                    <button class="btn btn-approve" onclick="approve('${tx.id}')">Approve</button>
+                    <button class="btn btn-reject" onclick="reject('${tx.id}')">Reject</button>
                 </div>
             ` : '';
 
@@ -502,28 +427,27 @@
                             <span class="detail-value" style="font-family: monospace; font-size: 0.75rem;">${tx.walletAddress || 'N/A'}</span>
                         </div>
                     </div>
-                    ${actionButtons}
+                    ${actions}
                 </div>
             `;
         }
 
         // Approve transaction
-        window.approveTransaction = async (transactionId) => {
-            if (!confirm('Are you sure you want to approve this transaction?')) return;
+        window.approve = async (id) => {
+            if (!confirm('Approve this transaction?')) return;
 
             try {
-                const tx = transactions.pending.find(t => t.id === transactionId);
+                const tx = transactions.pending.find(t => t.id === id);
                 if (!tx) return;
 
-                // Update transaction status
-                await update(ref(database, `pendingTransactions/${transactionId}`), {
+                await update(ref(db, `pendingTransactions/${id}`), {
                     status: 'approved',
                     approvedAt: serverTimestamp(),
-                    approvedBy: currentAdmin.email
+                    approvedBy: currentUser.email
                 });
 
                 // Update user balance
-                const userRef = ref(database, `users/${tx.userId}`);
+                const userRef = ref(db, `users/${tx.userId}`);
                 const userSnapshot = await new Promise(resolve => {
                     onValue(userRef, resolve, { onlyOnce: true });
                 });
@@ -537,41 +461,32 @@
                     });
                 }
 
-                alert('Transaction approved successfully!');
+                alert('Transaction approved!');
 
             } catch (error) {
-                alert('Error approving transaction: ' + error.message);
+                alert('Error: ' + error.message);
             }
         };
 
         // Reject transaction
-        window.rejectTransaction = async (transactionId) => {
+        window.reject = async (id) => {
             const reason = prompt('Rejection reason (optional):');
             if (reason === null) return;
 
             try {
-                await update(ref(database, `pendingTransactions/${transactionId}`), {
+                await update(ref(db, `pendingTransactions/${id}`), {
                     status: 'rejected',
                     rejectedAt: serverTimestamp(),
-                    rejectedBy: currentAdmin.email,
+                    rejectedBy: currentUser.email,
                     rejectionReason: reason || 'No reason provided'
                 });
 
-                alert('Transaction rejected successfully!');
+                alert('Transaction rejected!');
 
             } catch (error) {
-                alert('Error rejecting transaction: ' + error.message);
+                alert('Error: ' + error.message);
             }
         };
-
-        // Update statistics
-        function updateStats() {
-            document.getElementById('pendingCount').textContent = transactions.pending.length;
-            document.getElementById('approvedCount').textContent = transactions.approved.length;
-            
-            const totalValue = transactions.approved.reduce((sum, tx) => sum + tx.amount, 0);
-            document.getElementById('totalValue').textContent = `$${totalValue.toLocaleString()}`;
-        }
     </script>
 </body>
 </html>
