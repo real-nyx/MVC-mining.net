@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f9f9f9;
+            color: #1a1a1a;
+            line-height: 1.4;
+            overflow-x: hidden;
+        }
+
+        .loading { 
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #ea580c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            width: 90%;
+            max-width: 300px;
+        }
+
+        .container {
+            display: none;
+            padding: 0.75rem;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            border: 1px solid #eee;
+        }
+
+        .header h1 {
+            color: #ea580c;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .stat { 
+            text-align: center;
+            padding: 0.5rem;
+        }
+        
+        .stat-number {
+            display: block;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ea580c;
+            margin-bottom: 0.125rem;
+        }
+
+        .stat span:last-child {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .tabs {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            overflow: hidden;
+        }
+
+        .tab-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .tab-btn {
+            padding: 0.875rem 0.5rem;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: #999;
+            font-size: 0.875rem;
+            transition: all 0.15s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: #ea580c;
+            background: #fff8f3;
+            border-bottom-color: #ea580c;
+        }
+
+        .tab-content { 
+            padding: 1rem 0.75rem; 
+        }
+        
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .transaction-card {
+            background: white;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.875rem;
+            padding-bottom: 0.875rem;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .user-info { 
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex: 1;
+            word-break: break-word;
+        }
+        
+        .transaction-date { 
+            color: #666; 
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .transaction-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail {
+            background: #fafafa;
+            padding: 0.75rem;
+            border-radius: 6px;
+        }
+        
+        .detail-label {
+            display: block;
+            color: #666;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-bottom: 0.375rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value { 
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .amount { 
+            color: #16a34a; 
+            font-size: 1rem;
+        }
+
+        .status {
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .status.pending { 
+            background: #fff4ed; 
+            color: #ea580c; 
+        }
+        
+        .status.approved { 
+            background: #ecfdf5; 
+            color: #16a34a; 
+        }
+        
+        .status.rejected { 
+            background: #fef2f2; 
+            color: #dc2626; 
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .btn-approve { 
+            background: #16a34a; 
+            color: white; 
+        }
+        
+        .btn-reject { 
+            background: #dc2626; 
+            color: white; 
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #666;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #ea580c;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 0.75rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 768px) {
+            .container { 
+                padding: 1.5rem;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            
+            .transaction-details { 
+                grid-template-columns: repeat(3, 1fr); 
+            }
+            
+            .action-buttons { 
+                display: flex; 
+                justify-content: flex-end;
+            }
+            
+            .btn {
+                width: auto;
+                min-width: 100px;
+            }
+        }
+
+        /* Desktop adjustments */
+        @media (min-width: 1024px) {
+            .container { 
+                max-width: 1000px;
+                padding: 2rem;
+            }
+            
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.5rem;
+            }
+            
+            .stats {
+                display: flex;
+                gap: 2rem;
+                margin-top: 0;
+            }
+            
+            .transaction-details { 
+                grid-template-columns: repeat(5, 1fr); 
+            }
+            
+            .detail { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="loading-card">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <div class="container" id="admin">
+        <div class="header">
+            <div>
+                <h1>Admin Panel</h1>
+                <p>Transaction Management</p>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-number" id="pending">0</span>
+                    <span>Pending</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="approved">0</span>
+                    <span>Approved</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="total">$0</span>
+                    <span>Total</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('pending')">Pending</button>
+                <button class="tab-btn" onclick="switchTab('approved')">Approved</button>
+                <button class="tab-btn" onclick="switchTab('rejected')">Rejected</button>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-panel active" id="pending-panel">
+                    <div id="pending-list"></div>
+                </div>
+                <div class="tab-panel" id="approved-panel">
+                    <div id="approved-list"></div>
+                </div>
+                <div class="tab-panel" id="rejected-panel">
+                    <div id="rejected-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, onValue, update, serverTimestamp, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBsOwXNtfaWwEh3qaM0suXafOg6CYLzDC8",
+            authDomain: "uamtv-c031c.firebaseapp.com",
+            databaseURL: "https://uamtv-c031c-default-rtdb.firebaseio.com",
+            projectId: "uamtv-c031c",
+            storageBucket: "uamtv-c031c.firebasestorage.app",
+            messagingSenderId: "9790917697",
+            appId: "1:9790917697:web:275c8347b7688e0ac38ac0",
+            measurementId: "G-RSXW1XBVQZ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let transactions = { pending: [], approved: [], rejected: [] };
+
+        const loading = document.getElementById('loading');
+        const admin = document.getElementById('admin');
+        const pendingCount = document.getElementById('pending');
+        const approvedCount = document.getElementById('approved');
+        const totalValue = document.getElementById('total');
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                init();
+            } else {
+                window.location.href = '/';
+            }
+        });
+
+        function init() {
+            loading.style.display = 'none';
+            admin.style.display = 'block';
+            setupListener();
+        }
+
+        function setupListener() {
+            const txRef = ref(db, 'pendingTransactions');
+            onValue(txRef, (snapshot) => {
+                transactions = { pending: [], approved: [], rejected: [] };
+                
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    
+                    Object.entries(data).forEach(([id, txData]) => {
+                        if (!txData) return;
+
+                        let status = txData.status || 'pending';
+                        
+                        if (status === 'processed') {
+                            status = 'approved';
+                        }
+                        
+                        if (!['pending', 'approved', 'rejected'].includes(status)) {
+                            status = 'pending';
+                        }
+
+                        if (!transactions[status]) {
+                            transactions[status] = [];
+                        }
+
+                        transactions[status].push({
+                            id,
+                            ...txData,
+                            status,
+                            amount: Number(txData.amount) || 0,
+                            dailyOutput: Number(txData.dailyOutput) || 0,
+                            level: txData.level || 'N/A',
+                            userEmail: txData.userEmail || 'Unknown',
+                            walletAddress: txData.walletAddress || 'N/A',
+                            createdAt: txData.createdAt || new Date().toISOString()
+                        });
+                    });
+                }
+
+                updateStats();
+                loadTransactions('pending');
+            }, (error) => {
+                console.error('Firebase error:', error);
+            });
+        }
+
+        function updateStats() {
+            pendingCount.textContent = transactions.pending.length;
+            approvedCount.textContent = transactions.approved.length;
+            
+            const total = transactions.approved.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+            totalValue.textContent = `$${total.toLocaleString()}`;
+        }
+
+        window.switchTab = (status) => {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(`${status}-panel`).classList.add('active');
+            
+            loadTransactions(status);
+        };
+
+        function loadTransactions(status) {
+            const container = document.getElementById(`${status}-list`);
+            
+            if (!transactions[status] || transactions[status].length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📭</div>
+                        <h3>No ${status} transactions</h3>
+                        <p>Everything is up to date</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = transactions[status]
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .map(tx => createCard(tx, status))
+                .join('');
+        }
+
+        function createCard(tx, status) {
+            const date = tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : 'N/A';
+            const actions = status === 'pending' ? `
+                <div class="action-buttons">
+                    <button class="btn btn-approve" onclick="approve('${tx.id}')">Approve</button>
+                    <button class="btn btn-reject" onclick="reject('${tx.id}')">Reject</button>
+                </div>
+            ` : '';
+
+            return `
+                <div class="transaction-card">
+                    <div class="transaction-header">
+                        <div class="user-info">${tx.userEmail}</div>
+                        <div class="transaction-date">${date}</div>
+                    </div>
+                    <div class="transaction-details">
+                        <div class="detail">
+                            <span class="detail-label">Level</span>
+                            <span class="detail-value">${tx.level}</span>
+                        </div>
+                        <div class="detail">
+                            <span class="detail-label">Amount</span>
+                            <span class="detail-value amount">$${(tx.amount || 0).toLocaleString()}</span>
+                        </div>
+                        <div class="detail">
+                            <span class="detail-label">Daily</span>
+                            <span class="detail-value">$${(tx.dailyOutput || 0).toLocaleString()}</span>
+                        </div>
+                        <div class="detail">
+                            <span class="detail-label">Status</span>
+                            <span class="status ${status}">${status}</span>
+                        </div>
+                    </div>
+                    ${actions}
+                </div>
+            `;
+        }
+
+        window.approve = async (id) => {
+            if (!confirm('Approve this transaction?')) return;
+
+            try {
+                const tx = transactions.pending.find(t => t.id === id);
+                if (!tx) return;
+
+                await update(ref(db, `pendingTransactions/${id}`), {
+                    status: 'approved',
+                    approvedAt: serverTimestamp(),
+                    approvedBy: currentUser.email
+                });
+
+                if (tx.userId) {
+                    try {
+                        const userRef = ref(db, `users/${tx.userId}`);
+                        const userSnapshot = await get(userRef);
+                        
+                        if (userSnapshot.exists()) {
+                            const userData = userSnapshot.val();
+                            const currentBalance = Number(userData.wallet?.usdBalance) || 0;
+                            const newBalance = currentBalance + Number(tx.amount || 0);
+                            
+                            await update(userRef, {
+                                'wallet/usdBalance': newBalance
+                            });
+                        }
+                    } catch (balanceError) {
+                        console.error('Balance update error:', balanceError);
+                    }
+                }
+
+                alert('Approved!');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+
+        window.reject = async (id) => {
+            const reason = prompt('Reason (optional):');
+            if (reason === null) return;
+
+            try {
+                await update(ref(db, `pendingTransactions/${id}`), {
+                    status: 'rejected',
+                    rejectedAt: serverTimestamp(),
+                    rejectedBy: currentUser.email,
+                    rejectionReason: reason || 'No reason'
+                });
+
+                alert('Rejected!');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+    </script>
+</body>
+</html>
