@@ -790,7 +790,7 @@ function validateWithdrawal(amount, address) {
     const numAmount = parseFloat(amount);
     
     if (isNaN(numAmount) || numAmount <= 0) return 'Please enter a valid amount';
-    if (numAmount < 1000) return 'Minimum withdrawal amount is $1,000';
+    if (numAmount < 30) return 'Minimum withdrawal amount is $30';
     if (numAmount > 50000) return 'Maximum withdrawal amount is $50,000';
     if (numAmount > userBalance) return 'Insufficient balance';
     if (!address || !address.trim()) return 'Please enter your BTC wallet address';
