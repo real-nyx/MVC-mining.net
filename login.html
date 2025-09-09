@@ -339,7 +339,9 @@
     </div>
 
     <script type="module">
-        import firebaseConfig from './firebaseConfig.js';
+        // Firebase configuration - you need to replace this with your actual config
+             import firebaseConfig from './firebaseConfig.js';
+
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { 
             getAuth, 
@@ -356,6 +358,7 @@
             update
         } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const database = getDatabase(app);
@@ -445,45 +448,88 @@
             currentTab = tab;
         };
 
-        // Create user profile in database
+        // FIXED: Create user profile in database with proper error handling
         const createUserProfile = async (uid, userData) => {
-            const userRef = ref(database, `users/${uid}`);
-            const snapshot = await get(userRef);
-            
-            if (!snapshot.exists()) {
-                const initialData = {
-                    profile: {
-                        name: userData.name,
-                        email: userData.email,
-                        joinDate: new Date().toISOString(),
-                        uid: uid
-                    },
-                    wallet: { usdBalance: 0 },
-                    transactions: {},
-                    marketData: {
-                        btcPrice: 0,
-                        ethPrice: 0,
-                        lastUpdated: new Date().toISOString()
+            try {
+                console.log('Creating user profile for UID:', uid);
+                console.log('User data:', userData);
+
+                const userRef = ref(database, `users/${uid}`);
+                
+                // Check if user already exists
+                const snapshot = await get(userRef);
+                console.log('User exists:', snapshot.exists());
+                
+                if (!snapshot.exists()) {
+                    // Create new user profile
+             // Create new user profile
+                    const profileData = {
+                        profile: {
+                            name: userData.name || '',
+                            email: userData.email || '',
+                            uid: uid,
+                            joinDate: new Date().toISOString(),
+                            createdAt: new Date().getTime()
+                        },
+                        wallet: {
+                            usdBalance: 0,
+                            btcBalance: 0,
+                            ethBalance: 0
+                        },
+                        transactions: {},
+                        settings: {
+                            theme: 'light',
+                            notifications: true
+                        },
+                        marketData: {
+                            btcPrice: 0,
+                            ethPrice: 0,
+                            lastUpdated: new Date().toISOString()
+                        }
+                    };
+
+                    console.log('Saving profile data:', profileData);
+                    await set(userRef, profileData);
+                    console.log('User profile created successfully');
+                    
+                    // Verify the data was saved
+                    const verificationSnapshot = await get(userRef);
+                    if (verificationSnapshot.exists()) {
+                        console.log('Verification successful. Saved data:', verificationSnapshot.val());
+                    } else {
+                        console.error('Verification failed - data not found after save');
                     }
-                };
-                await set(userRef, initialData);
-            } else {
-                // Update existing user's name if it was missing
-                const existingData = snapshot.val();
-                if (!existingData.profile || !existingData.profile.name) {
-                    await update(userRef, {
-                        'profile/name': userData.name
-                    });
+                } else {
+                    // Update existing user if name is missing
+                    const existingData = snapshot.val();
+                    console.log('Existing user data:', existingData);
+                    
+                    if (!existingData.profile || !existingData.profile.name) {
+                        console.log('Updating existing user with name');
+                        await update(userRef, {
+                            'profile/name': userData.name,
+                            'profile/lastLogin': new Date().toISOString()
+                        });
+                        console.log('User profile updated successfully');
+                    } else {
+                        // Just update last login
+                        await update(userRef, {
+                            'profile/lastLogin': new Date().toISOString()
+                        });
+                    }
                 }
+            } catch (error) {
+                console.error('Error creating/updating user profile:', error);
+                throw error; // Re-throw to handle in calling function
             }
         };
 
-        // Form handlers
+        // FIXED: Form handlers with better error handling
         const handleLogin = async e => {
             e.preventDefault();
             if (isProcessing) return;
 
-            const email = $('loginEmail').value;
+            const email = $('loginEmail').value.trim();
             const password = $('loginPassword').value;
 
             clearAllErrors();
@@ -494,17 +540,32 @@
 
             try {
                 showLoading(elements.buttons.login, true, 'Signing in...');
-                await signInWithEmailAndPassword(auth, email, password);
+                console.log('Attempting to sign in user:', email);
+                
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                console.log('User signed in successfully:', userCredential.user.uid);
+                
+                // Update last login time
+                try {
+                    const userRef = ref(database, `users/${userCredential.user.uid}/profile/lastLogin`);
+                    await set(userRef, new Date().toISOString());
+                } catch (updateError) {
+                    console.warn('Could not update last login time:', updateError);
+                }
+                
                 window.location.href = './';
             } catch (error) {
+                console.error('Login error:', error);
                 showLoading(elements.buttons.login, false);
                 const messages = {
                     'auth/user-not-found': 'No account found with this email',
                     'auth/wrong-password': 'Incorrect password',
                     'auth/invalid-credential': 'Invalid email or password',
-                    'auth/too-many-requests': 'Too many failed attempts. Try again later.'
+                    'auth/invalid-email': 'Invalid email address',
+                    'auth/too-many-requests': 'Too many failed attempts. Try again later.',
+                    'auth/network-request-failed': 'Network error. Please check your connection.'
                 };
-                showError('loginPassword', messages[error.code] || 'Login failed');
+                showError('loginPassword', messages[error.code] || `Login failed: ${error.message}`);
             }
         };
 
@@ -513,35 +574,49 @@
             if (isProcessing) return;
 
             const name = $('signupName').value.trim();
-            const email = $('signupEmail').value;
+            const email = $('signupEmail').value.trim();
             const password = $('signupPassword').value;
 
             clearAllErrors();
 
             if (!name) return showError('signupName', 'Name is required');
-            if (name.length < 2) return showError('signupName', 'Name too short');
+            if (name.length < 2) return showError('signupName', 'Name must be at least 2 characters');
             if (!email) return showError('signupEmail', 'Email is required');
-            if (!validateEmail(email)) return showError('signupEmail', 'Invalid email');
+            if (!validateEmail(email)) return showError('signupEmail', 'Invalid email address');
             if (!password) return showError('signupPassword', 'Password is required');
             if (password.length < 6) return showError('signupPassword', 'Password must be at least 6 characters');
 
             try {
                 showLoading(elements.buttons.signup, true, 'Creating account...');
+                console.log('Attempting to create user:', email);
+                
+                // Create user account
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                console.log('User account created:', userCredential.user.uid);
+                
+                // Create user profile in database
                 await createUserProfile(userCredential.user.uid, { name, email });
                 
                 showLoading(elements.buttons.signup, false);
-                showSuccess('Account created successfully! You can now log in.');
-                switchTab('login');
+                showSuccess('Account created successfully! You can now sign in.');
+                
+                // Clear form and switch to login tab
                 document.getElementById('signupFormElement').reset();
+                switchTab('login');
+                
+                // Pre-fill login email
+                $('loginEmail').value = email;
+                
             } catch (error) {
+                console.error('Signup error:', error);
                 showLoading(elements.buttons.signup, false);
                 const messages = {
-                    'auth/email-already-in-use': 'Account with this email already exists',
+                    'auth/email-already-in-use': 'An account with this email already exists',
                     'auth/invalid-email': 'Invalid email address',
-                    'auth/weak-password': 'Password is too weak'
+                    'auth/weak-password': 'Password is too weak. Use at least 6 characters.',
+                    'auth/network-request-failed': 'Network error. Please check your connection.'
                 };
-                showError('signupPassword', messages[error.code] || 'Signup failed');
+                showError('signupPassword', messages[error.code] || `Signup failed: ${error.message}`);
             }
         };
 
@@ -549,36 +624,49 @@
             e.preventDefault();
             if (isProcessing) return;
 
-            const email = $('forgotEmail').value;
+            const email = $('forgotEmail').value.trim();
 
             clearAllErrors();
 
             if (!email) return showError('forgotEmail', 'Email is required');
-            if (!validateEmail(email)) return showError('forgotEmail', 'Invalid email');
+            if (!validateEmail(email)) return showError('forgotEmail', 'Invalid email address');
 
             try {
                 showLoading(elements.buttons.forgot, true, 'Sending email...');
+                console.log('Sending password reset email to:', email);
+                
                 await sendPasswordResetEmail(auth, email);
                 
                 showLoading(elements.buttons.forgot, false);
-                showSuccess('Password reset email sent! Check your inbox.');
-                switchTab('login');
+                showSuccess('Password reset email sent! Check your inbox and spam folder.');
+                
+                // Clear form and switch to login
                 document.getElementById('forgotFormElement').reset();
+                switchTab('login');
+                
+                // Pre-fill login email
+                $('loginEmail').value = email;
+                
             } catch (error) {
+                console.error('Password reset error:', error);
                 showLoading(elements.buttons.forgot, false);
                 const messages = {
-                    'auth/user-not-found': 'No account found with this email',
-                    'auth/invalid-email': 'Invalid email address'
+                    'auth/user-not-found': 'No account found with this email address',
+                    'auth/invalid-email': 'Invalid email address',
+                    'auth/too-many-requests': 'Too many requests. Please wait before trying again.',
+                    'auth/network-request-failed': 'Network error. Please check your connection.'
                 };
-                showError('forgotEmail', messages[error.code] || 'Failed to send reset email');
+                showError('forgotEmail', messages[error.code] || `Failed to send reset email: ${error.message}`);
             }
         };
 
-// Initialize
+        // Initialize application
         const init = () => {
+            console.log('Initializing CryptoDash login...');
+            
             // Store original button texts
             Object.values(elements.buttons).forEach(btn => {
-                if (btn) btn.dataset.originalText = btn.textContent;
+                if (btn) btn.dataset.originalText = btn.textContent.trim();
             });
 
             // Tab listeners
@@ -594,14 +682,29 @@
 
             // Clear errors on input
             ['loginEmail', 'loginPassword', 'signupName', 'signupEmail', 'signupPassword', 'forgotEmail']
-                .forEach(id => $(id).addEventListener('input', () => clearError(id)));
+                .forEach(id => {
+                    const element = $(id);
+                    if (element) {
+                        element.addEventListener('input', () => clearError(id));
+                        // Also clear on focus
+                        element.addEventListener('focus', () => clearError(id));
+                    }
+                });
 
-            // Check if user is already logged in
+            // Check authentication state
             onAuthStateChanged(auth, user => {
-                if (user) window.location.href = './';
+                if (user) {
+                    console.log('User is already logged in:', user.uid);
+                    window.location.href = './';
+                } else {
+                    console.log('No user logged in');
+                }
             });
+
+            console.log('CryptoDash login initialized successfully');
         };
 
+        // Start the application
         init();
     </script>
 </body>
