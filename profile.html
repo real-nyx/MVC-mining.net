@@ -425,7 +425,7 @@
                 );
 
                 // Update level
-                const level = userData.level || 1;
+                const level = userData.level || 0;
                 elements.levelDisplay.textContent = `Level ${level}`;
                 removeSkeleton(elements.userLevel);
                 elements.userLevel.textContent = level;
