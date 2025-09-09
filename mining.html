@@ -110,8 +110,8 @@
         }
 
         .mining-gif {
-            width: 160px;
-            height: 160px;
+            width: 10px;
+            height: 10px;
             display: none;
         }
 
@@ -553,9 +553,9 @@
             
             // Update withdraw button
             const withdrawBtn = document.getElementById('withdrawBtn');
-            const canWithdraw = (userData.totalEarned || 0) >= 500;
+            const canWithdraw = (userData.totalEarned || 0) >= 30;
             withdrawBtn.disabled = !canWithdraw;
-            withdrawBtn.textContent = canWithdraw ? 'Withdraw' : '$500 min';
+            withdrawBtn.textContent = canWithdraw ? 'Withdraw' : '$30 min';
             
             if (!level || !userData.level) {
                 document.getElementById('currentLevelText').textContent = 'Upgrade Plan Required';
