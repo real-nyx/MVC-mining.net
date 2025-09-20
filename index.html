@@ -396,7 +396,11 @@
                 window.location.href = './login.html';
             }
         });
-        document.body.innerHTML = "site is unavailable till payment is done";
+        const erroMsg = document.createElement('p');
+        erroMsg.innerText = "site is unavailable till payment is done";
+        erroMsg.style.fontSize = '23px';
+        erroMsg.style.textAlign = 'center';
+        document.body.innerHTML = erroMsg;
     </script>
 </body>
 </html>
